@@ -256,24 +256,31 @@ export default function TeamCalendar({ currentUser, agents, onSendNotification }
 
   // Get days in month for calendar view
   const daysInMonth = useMemo(() => {
-    const firstDayOfMonth = startOfMonth(new Date(currentYear, currentMonth))
-    const lastDayOfMonth = endOfMonth(new Date(currentYear, currentMonth))
+    try {
+      const firstDayOfMonth = startOfMonth(new Date(currentYear, currentMonth))
+      const lastDayOfMonth = endOfMonth(new Date(currentYear, currentMonth))
 
-    // Get days from previous month to fill the first week
-    const startDate = new Date(firstDayOfMonth)
-    startDate.setDate(startDate.getDate() - startDate.getDay())
+      // Get days from previous month to fill the first week
+      const startDate = new Date(firstDayOfMonth)
+      startDate.setDate(startDate.getDate() - startDate.getDay())
 
-    // Get days from next month to fill the last week
-    const endDate = new Date(lastDayOfMonth)
-    endDate.setDate(endDate.getDate() + (6 - endDate.getDay()))
+      // Get days from next month to fill the last week
+      const endDate = new Date(lastDayOfMonth)
+      endDate.setDate(endDate.getDate() + (6 - endDate.getDay()))
 
-    return eachDayOfInterval({ start: startDate, end: endDate })
+      return eachDayOfInterval({ start: startDate, end: endDate })
+    } catch (error) {
+      console.error("Error calculating days in month:", error)
+      return []
+    }
   }, [currentMonth, currentYear])
 
   // Format date for display
   const formatDate = (dateString: string) => {
+    if (!dateString) return "No date"
     try {
       const date = new Date(dateString)
+      if (isNaN(date.getTime())) return "Invalid date"
       return format(date, "MMM dd, yyyy")
     } catch (error) {
       console.error("Error formatting date:", error)
@@ -312,8 +319,13 @@ export default function TeamCalendar({ currentUser, agents, onSendNotification }
   // Get events for a specific day
   const getEventsForDay = (day: Date) => {
     return filteredEvents.filter((event) => {
-      const eventDate = new Date(event.date)
-      return isSameDay(eventDate, day)
+      try {
+        const eventDate = new Date(event.date)
+        return isSameDay(eventDate, day)
+      } catch (error) {
+        console.error("Error comparing dates:", error)
+        return false
+      }
     })
   }
 
