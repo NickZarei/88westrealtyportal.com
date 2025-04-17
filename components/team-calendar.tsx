@@ -49,6 +49,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 
+// Simple event type
 interface CalendarEvent {
   id: string
   title: string
@@ -56,26 +57,26 @@ interface CalendarEvent {
   date: string
   time: string
   location: string
-  organizer: string
-  attendees: string[] // "all" or specific user IDs
-  notificationStatus: {
+  eventType: "birthday" | "office" | "event"
+  color?: string
+  attendees?: string[] // "all" or specific user IDs
+  notificationStatus?: {
     initial: boolean
     dayBefore: boolean
     thirtyMinBefore: boolean
   }
-  eventType: "birthday" | "office" | "event"
   customPhoneNumbers?: string[]
   customEmails?: string[]
-  color?: string
   rsvpStatus?: {
     [key: string]: "yes" | "no" | "maybe" | "pending"
   }
+  organizer?: string
   createdBy?: string
   createdAt?: string
 }
 
-// Sample calendar events
-const SAMPLE_EVENTS: CalendarEvent[] = [
+// Sample events
+const SAMPLE_EVENTS = [
   {
     id: "event1",
     title: "Monthly Team Meeting",
@@ -83,92 +84,28 @@ const SAMPLE_EVENTS: CalendarEvent[] = [
     date: "2025-05-15",
     time: "15:00",
     location: "Main Conference Room",
-    organizer: "mike",
-    attendees: ["all"],
-    notificationStatus: {
-      initial: true,
-      dayBefore: false,
-      thirtyMinBefore: false,
-    },
     eventType: "office",
-    color: "#4f46e5", // indigo
-    rsvpStatus: {
-      john: "yes",
-      jane: "no",
-      mike: "yes",
-      sarah: "maybe",
-    },
-    createdBy: "mike",
-    createdAt: "2025-04-01",
+    color: "#10b981",
   },
   {
     id: "event2",
-    title: "Training Session: New CRM System",
-    description: "Learn how to use our new customer relationship management system",
+    title: "Training Session",
+    description: "Learn how to use our new CRM system",
     date: "2025-05-20",
     time: "10:00",
     location: "Training Room B",
-    organizer: "sarah",
-    attendees: ["john", "jane"],
-    notificationStatus: {
-      initial: true,
-      dayBefore: false,
-      thirtyMinBefore: false,
-    },
     eventType: "event",
-    color: "#0891b2", // cyan
-    rsvpStatus: {
-      john: "pending",
-      jane: "yes",
-    },
-    createdBy: "sarah",
-    createdAt: "2025-04-05",
+    color: "#0891b2",
   },
   {
     id: "event3",
-    title: "Community Open House",
-    description: "Showcase of new properties in the Highland Park area",
-    date: "2025-05-25",
-    time: "13:00",
-    location: "Highland Park Community Center",
-    organizer: "mike",
-    attendees: ["all"],
-    notificationStatus: {
-      initial: false,
-      dayBefore: false,
-      thirtyMinBefore: false,
-    },
-    eventType: "event",
-    customPhoneNumbers: ["555-123-4567", "555-987-6543"],
-    customEmails: ["client1@example.com", "client2@example.com"],
-    color: "#0891b2", // cyan
-    rsvpStatus: {},
-    createdBy: "mike",
-    createdAt: "2025-04-10",
-  },
-  {
-    id: "event4",
-    title: "Jane's Birthday Celebration",
+    title: "Jane's Birthday",
     description: "Cake and celebration in the break room",
     date: "2025-05-18",
     time: "16:00",
     location: "Break Room",
-    organizer: "mike",
-    attendees: ["all"],
-    notificationStatus: {
-      initial: true,
-      dayBefore: false,
-      thirtyMinBefore: false,
-    },
     eventType: "birthday",
-    color: "#ea580c", // orange
-    rsvpStatus: {
-      john: "yes",
-      mike: "yes",
-      sarah: "yes",
-    },
-    createdBy: "mike",
-    createdAt: "2025-04-15",
+    color: "#f97316",
   },
 ]
 
@@ -255,7 +192,7 @@ export default function TeamCalendar({ currentUser, agents, onSendNotification }
   }, [events])
 
   // Get days in month for calendar view
-  const daysInMonth = useMemo(() => {
+  const getDaysInMonth = () => {
     try {
       const firstDayOfMonth = startOfMonth(new Date(currentYear, currentMonth))
       const lastDayOfMonth = endOfMonth(new Date(currentYear, currentMonth))
@@ -273,17 +210,16 @@ export default function TeamCalendar({ currentUser, agents, onSendNotification }
       console.error("Error calculating days in month:", error)
       return []
     }
-  }, [currentMonth, currentYear])
+  }
 
   // Format date for display
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateString) => {
     if (!dateString) return "No date"
     try {
       const date = new Date(dateString)
       if (isNaN(date.getTime())) return "Invalid date"
       return format(date, "MMM dd, yyyy")
     } catch (error) {
-      console.error("Error formatting date:", error)
       return "Invalid Date"
     }
   }
@@ -302,8 +238,8 @@ export default function TeamCalendar({ currentUser, agents, onSendNotification }
   }
 
   // Get month name
-  const getMonthName = (month: number) => {
-    return format(new Date(currentYear, month), "MMMM yyyy")
+  const getMonthName = () => {
+    return format(new Date(currentYear, currentMonth), "MMMM yyyy")
   }
 
   // Filter events based on selected filters
@@ -317,16 +253,27 @@ export default function TeamCalendar({ currentUser, agents, onSendNotification }
   }, [events, filterEventType])
 
   // Get events for a specific day
-  const getEventsForDay = (day: Date) => {
+  const getEventsForDay = (day) => {
     return filteredEvents.filter((event) => {
       try {
         const eventDate = new Date(event.date)
         return isSameDay(eventDate, day)
-      } catch (error) {
-        console.error("Error comparing dates:", error)
+      } catch {
         return false
       }
     })
+  }
+
+  // Get event icon based on type
+  const getEventIcon = (eventType) => {
+    switch (eventType) {
+      case "birthday":
+        return <Cake className="h-3 w-3" />
+      case "office":
+        return <Building className="h-3 w-3" />
+      default:
+        return <Calendar className="h-3 w-3" />
+    }
   }
 
   // Handle adding/editing event
@@ -628,7 +575,7 @@ export default function TeamCalendar({ currentUser, agents, onSendNotification }
                 <ChevronLeft className="h-4 w-4" />
                 Previous
               </Button>
-              <h2 className="text-xl font-semibold">{getMonthName(currentMonth)}</h2>
+              <h2 className="text-xl font-semibold">{getMonthName()}</h2>
               <Button variant="outline" size="sm" onClick={handleNextMonth}>
                 Next
                 <ChevronRight className="h-4 w-4" />
@@ -642,7 +589,7 @@ export default function TeamCalendar({ currentUser, agents, onSendNotification }
                 </div>
               ))}
 
-              {daysInMonth.map((day, i) => {
+              {getDaysInMonth().map((day, i) => {
                 const dayEvents = getEventsForDay(day)
                 const isCurrentMonth = isSameMonth(day, new Date(currentYear, currentMonth))
 
@@ -659,13 +606,10 @@ export default function TeamCalendar({ currentUser, agents, onSendNotification }
                         <div
                           key={event.id}
                           className="text-xs p-1 rounded truncate cursor-pointer"
-                          style={{ backgroundColor: event.color || eventColors[event.eventType] }}
-                          onClick={() => viewEventDetails(event)}
+                          style={{ backgroundColor: event.color }}
                         >
                           <div className="flex items-center gap-1 text-white">
-                            {event.eventType === "birthday" && <Cake className="h-3 w-3" />}
-                            {event.eventType === "office" && <Building className="h-3 w-3" />}
-                            {event.eventType === "event" && <Calendar className="h-3 w-3" />}
+                            {getEventIcon(event.eventType)}
                             <span className="truncate">{event.title}</span>
                           </div>
                         </div>
@@ -685,102 +629,43 @@ export default function TeamCalendar({ currentUser, agents, onSendNotification }
               <Table>
                 <TableHeader className="bg-red-50">
                   <TableRow>
-                    <TableHead>Type</TableHead>
                     <TableHead>Event</TableHead>
                     <TableHead>Date & Time</TableHead>
                     <TableHead>Location</TableHead>
-                    <TableHead>Organizer</TableHead>
-                    <TableHead>Actions</TableHead>
+                    <TableHead>Type</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {filteredEvents.length > 0 ? (
                     filteredEvents
                       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-                      .map((event) => {
-                        const organizer = agents.find((agent) => agent.username === event.organizer)
-                        const rsvpStatus = event.rsvpStatus?.[currentUser.username]
-
-                        return (
-                          <TableRow key={event.id}>
-                            <TableCell>
-                              <Badge
-                                className={
-                                  event.eventType === "birthday"
-                                    ? "bg-orange-100 text-orange-700 border-orange-200"
-                                    : event.eventType === "office"
-                                      ? "bg-emerald-100 text-emerald-700 border-emerald-200"
-                                      : "bg-cyan-100 text-cyan-700 border-cyan-200"
-                                }
-                              >
-                                {event.eventType === "birthday" && <Cake className="h-3 w-3 mr-1" />}
-                                {event.eventType === "office" && <Building className="h-3 w-3 mr-1" />}
-                                {event.eventType === "event" && <Calendar className="h-3 w-3 mr-1" />}
-                                {event.eventType.charAt(0).toUpperCase() + event.eventType.slice(1)}
-                              </Badge>
-                            </TableCell>
-                            <TableCell className="font-medium">{event.title}</TableCell>
-                            <TableCell>
-                              {formatDate(event.date)} at {event.time}
-                            </TableCell>
-                            <TableCell>
-                              <div className="flex items-center">
-                                <MapPin className="h-4 w-4 mr-1 text-gray-500" />
-                                {event.location}
-                              </div>
-                            </TableCell>
-                            <TableCell>{organizer?.name || event.organizer}</TableCell>
-                            <TableCell>
-                              <div className="flex gap-2">
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => viewEventDetails(event)}
-                                  className="border-red-200 text-red-600 hover:bg-red-50"
-                                >
-                                  <Info className="h-4 w-4" />
-                                </Button>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => handleRsvp(event)}
-                                  className={
-                                    rsvpStatus === "yes"
-                                      ? "border-green-200 text-green-600 bg-green-50"
-                                      : rsvpStatus === "no"
-                                        ? "border-red-200 text-red-600 bg-red-50"
-                                        : rsvpStatus === "maybe"
-                                          ? "border-amber-200 text-amber-600 bg-amber-50"
-                                          : "border-gray-200"
-                                  }
-                                >
-                                  {rsvpStatus === "yes" ? (
-                                    <ThumbsUp className="h-4 w-4" />
-                                  ) : rsvpStatus === "no" ? (
-                                    <ThumbsDown className="h-4 w-4" />
-                                  ) : (
-                                    "RSVP"
-                                  )}
-                                </Button>
-                                {canModifyCalendar && (
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => handleEditEvent(event)}
-                                    className="border-blue-200 text-blue-600 hover:bg-blue-50"
-                                  >
-                                    Edit
-                                  </Button>
-                                )}
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                        )
-                      })
+                      .map((event) => (
+                        <TableRow key={event.id}>
+                          <TableCell className="font-medium">{event.title}</TableCell>
+                          <TableCell>
+                            {formatDate(event.date)} at {event.time}
+                          </TableCell>
+                          <TableCell>{event.location}</TableCell>
+                          <TableCell>
+                            <Badge
+                              className={
+                                event.eventType === "birthday"
+                                  ? "bg-orange-100 text-orange-700 border-orange-200"
+                                  : event.eventType === "office"
+                                    ? "bg-emerald-100 text-emerald-700 border-emerald-200"
+                                    : "bg-cyan-100 text-cyan-700 border-cyan-200"
+                              }
+                            >
+                              {getEventIcon(event.eventType)}
+                              <span className="ml-1">{event.eventType}</span>
+                            </Badge>
+                          </TableCell>
+                        </TableRow>
+                      ))
                   ) : (
                     <TableRow>
-                      <TableCell colSpan={6} className="text-center py-8 text-gray-500">
-                        No events found for the selected filters.
+                      <TableCell colSpan={4} className="text-center py-8 text-gray-500">
+                        No events found.
                       </TableCell>
                     </TableRow>
                   )}
