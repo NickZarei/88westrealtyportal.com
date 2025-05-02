@@ -1,15 +1,35 @@
 import { NextResponse } from "next/server";
+import { connectDB } from "@/lib/connectDb";
+import Event from "@/models/Event";
 
-export async function PUT(req: Request, { params }: { params: { id: string } }): Promise<NextResponse> {
+// DELETE: Remove an event by ID
+export async function DELETE(
+  req: Request,
+  { params }: { params: { id: string } }
+): Promise<NextResponse> {
   try {
-    const eventId = params.id;  // Access the 'id' from the params
-    const body = await req.json();  // Get the data from the request body
+    await connectDB();
+    const eventId = params.id;
 
-    // Perform the update operation with the `eventId` and `body`
-    // Example: await Event.update(eventId, body);
+    const deleted = await Event.findByIdAndDelete(eventId);
 
-    return NextResponse.json({ success: true, message: "Event updated successfully!" });
+    if (!deleted) {
+      return NextResponse.json(
+        { success: false, message: "Event not found" },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json({
+      success: true,
+      message: "✅ Event deleted successfully",
+    });
   } catch (error) {
-    return NextResponse.json({ success: false, error: error instanceof Error ? error.message : "Unknown error" });
+    return NextResponse.json(
+      {
+        success: false,
+        error: error instanceof Error ? error.message : "Unknown error" },
+      { status: 500 }
+    );
   }
 }
