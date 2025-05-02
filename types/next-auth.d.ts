@@ -1,3 +1,4 @@
+// types/next-auth.d.ts
 import NextAuth from "next-auth";
 
 declare module "next-auth" {
@@ -6,11 +7,11 @@ declare module "next-auth" {
       name?: string | null;
       email?: string | null;
       image?: string | null;
-      role?: "admin" | "marketing" | "agent";
+      role?: "admin" | "agent" | "marketing" | "ceo" | "hr" | "operations";
     };
   }
 
   interface User {
-    role?: "admin" | "marketing" | "agent";
+    role?: "admin" | "agent" | "marketing" | "ceo" | "hr" | "operations";
   }
 }

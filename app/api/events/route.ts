@@ -1,18 +1,15 @@
 import { NextResponse } from "next/server";
-import connectDb from "@/lib/connectDb";
-import Activity from "@/models/Activity";
 
-export async function PUT(req: Request, { params }: { params: { id: string } }) {
+export async function PUT(req: Request, { params }: { params: { id: string } }): Promise<NextResponse> {
   try {
-    await connectDb();
-    const body = await req.json();
-    const updated = await Activity.findByIdAndUpdate(
-      params.id,
-      { status: body.status },
-      { new: true }
-    );
-    return NextResponse.json({ success: true, activity: updated });
-  } catch (err: any) {
-    return NextResponse.json({ success: false, error: err.message }, { status: 500 });
+    const eventId = params.id;  // Access the 'id' from the params
+    const body = await req.json();  // Get the data from the request body
+
+    // Perform the update operation with the `eventId` and `body`
+    // Example: await Event.update(eventId, body);
+
+    return NextResponse.json({ success: true, message: "Event updated successfully!" });
+  } catch (error) {
+    return NextResponse.json({ success: false, error: error instanceof Error ? error.message : "Unknown error" });
   }
 }

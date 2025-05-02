@@ -24,6 +24,12 @@
       }
     ]
   },
-  "include": ["**/*.ts", "**/*.tsx", "next-env.d.ts", ".next/types/**/*.ts"],
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    "next-env.d.ts",
+    ".next/types/**/*.ts",
+    "types/**/*.d.ts"          // ✅ This line ensures your next-auth types are loaded
+  ],
   "exclude": ["node_modules"]
 }

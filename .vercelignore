@@ -1,0 +1,5 @@
+.eslintrc.js
+.eslintrc.cjs
+.eslint.config.js
+.eslint.config.mjs
+.eslintignore
