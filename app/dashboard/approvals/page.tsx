@@ -1,10 +1,24 @@
 "use client";
 
+import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 
 export default function ApprovalsPage() {
+  const { data: session, status } = useSession();
   const [activities, setActivities] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // ✅ Block unauthorized roles
+  if (
+    status === "loading"
+  ) return <p className="p-6">Checking permissions...</p>;
+
+  if (
+    session?.user?.role !== "admin" &&
+    session?.user?.role !== "hr"
+  ) {
+    return <p className="p-6 text-red-600">Access denied.</p>;
+  }
 
   useEffect(() => {
     const fetchActivities = async () => {
@@ -12,7 +26,6 @@ export default function ApprovalsPage() {
         const res = await fetch("/api/events");
         const data = await res.json();
 
-        // Make sure the response is an array
         if (Array.isArray(data)) {
           const pending = data.filter((a: any) => a.status === "Pending");
           setActivities(pending);
