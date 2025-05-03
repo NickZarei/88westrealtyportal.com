@@ -35,7 +35,10 @@ export default function DashboardPage() {
     }
   }, [session?.user?.email]);
 
-  const points = activities.reduce((total, act) => act.status === "Approved" ? total + 10 : total, 0);
+  const points = activities.reduce(
+    (total, act) => (act.status === "Approved" ? total + 10 : total),
+    0
+  );
   const approvedCount = activities.filter((a) => a.status === "Approved").length;
   const rejectedCount = activities.filter((a) => a.status === "Rejected").length;
 
@@ -44,9 +47,19 @@ export default function DashboardPage() {
       <h1 className="text-2xl font-bold text-red-700 mb-2">
         👋 Welcome, {session?.user?.name}
       </h1>
+      
+      {/* ✅ TEST LINE: to confirm this version is live */}
+      <p className="text-blue-500 font-bold">
+        🔥 TEST: New DashboardPage version deployed!
+      </p>
+
       <p className="text-gray-700 mb-1">Email: {session?.user?.email}</p>
-      <p className="mb-1">🎯 Total Points: <strong>{points}</strong></p>
-      <p className="mb-6">✅ Approved: {approvedCount} | ❌ Rejected: {rejectedCount}</p>
+      <p className="mb-1">
+        🎯 Total Points: <strong>{points}</strong>
+      </p>
+      <p className="mb-6">
+        ✅ Approved: {approvedCount} | ❌ Rejected: {rejectedCount}
+      </p>
 
       <h2 className="text-xl font-semibold mb-4">Your Submitted Activities</h2>
 
@@ -61,19 +74,26 @@ export default function DashboardPage() {
               key={activity._id}
               className="border border-gray-200 p-4 rounded shadow-sm bg-white"
             >
-              <p><strong>Type:</strong> {activity.type}</p>
-              <p><strong>Status:</strong>{" "}
-                <span className={
-                  activity.status === "Approved"
-                    ? "text-green-600"
-                    : activity.status === "Rejected"
-                    ? "text-red-600"
-                    : "text-gray-700"
-                }>
+              <p>
+                <strong>Type:</strong> {activity.type}
+              </p>
+              <p>
+                <strong>Status:</strong>{" "}
+                <span
+                  className={
+                    activity.status === "Approved"
+                      ? "text-green-600"
+                      : activity.status === "Rejected"
+                      ? "text-red-600"
+                      : "text-gray-700"
+                  }
+                >
                   {activity.status}
                 </span>
               </p>
-              <p><strong>Notes:</strong> {activity.notes || "—"}</p>
+              <p>
+                <strong>Notes:</strong> {activity.notes || "—"}
+              </p>
             </div>
           ))}
         </div>
