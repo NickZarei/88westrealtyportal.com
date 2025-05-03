@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import toast from "react-hot-toast";
 
 export default function DashboardPage() {
   const [form, setForm] = useState({
@@ -9,17 +11,16 @@ export default function DashboardPage() {
     location: "",
   });
 
-  const [success, setSuccess] = useState(false);
-  const [error, setError] = useState("");
   const [events, setEvents] = useState<any[]>([]);
 
-  // Fetch events from backend
   const fetchEvents = async () => {
     try {
       const res = await fetch("/api/events");
       const data = await res.json();
       if (Array.isArray(data.events)) {
         setEvents(data.events);
+      } else {
+        setEvents(data); // fallback if response is array
       }
     } catch (err) {
       console.error("Error fetching events:", err);
@@ -36,37 +37,38 @@ export default function DashboardPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSuccess(false);
-    setError("");
 
     try {
       const res = await fetch("/api/events", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
       });
 
       const data = await res.json();
 
       if (data.success) {
-        setSuccess(true);
+        toast.success("✅ Event created!");
         setForm({ title: "", date: "", location: "" });
-        fetchEvents(); // Refresh event list after creating new one
+        fetchEvents();
       } else {
         throw new Error(data.error || "Something went wrong");
       }
     } catch (err: any) {
-      setError(err.message);
+      toast.error("❌ " + err.message);
     }
   };
 
   return (
-    <div style={{ padding: "40px", maxWidth: "600px", margin: "0 auto" }}>
-      <h1 style={{ fontSize: "2rem", marginBottom: "20px" }}>Create New Event</h1>
+    <motion.div
+      initial={{ opacity: 0, y: 30 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className="max-w-2xl mx-auto p-6 bg-gradient-to-br from-red-50 to-white rounded-xl shadow-md mt-10"
+    >
+      <h1 className="text-3xl font-bold text-red-700 mb-6 text-center">📅 Create New Event</h1>
 
-      <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
+      <form onSubmit={handleSubmit} className="space-y-4">
         <input
           type="text"
           name="title"
@@ -74,6 +76,7 @@ export default function DashboardPage() {
           value={form.title}
           onChange={handleChange}
           required
+          className="w-full p-3 border border-gray-300 rounded"
         />
         <input
           type="datetime-local"
@@ -81,6 +84,7 @@ export default function DashboardPage() {
           value={form.date}
           onChange={handleChange}
           required
+          className="w-full p-3 border border-gray-300 rounded"
         />
         <input
           type="text"
@@ -88,49 +92,38 @@ export default function DashboardPage() {
           placeholder="Location"
           value={form.location}
           onChange={handleChange}
+          className="w-full p-3 border border-gray-300 rounded"
         />
-
         <button
           type="submit"
-          style={{
-            padding: "10px 20px",
-            backgroundColor: "#0070f3",
-            color: "#fff",
-            border: "none",
-            borderRadius: "5px",
-            cursor: "pointer",
-          }}
+          className="w-full bg-red-600 text-white font-semibold py-2 rounded hover:bg-red-700"
         >
           Create Event
         </button>
       </form>
 
-      {success && <p style={{ color: "green", marginTop: "10px" }}>✅ Event created!</p>}
-      {error && <p style={{ color: "red", marginTop: "10px" }}>{error}</p>}
-
-      <h2 style={{ fontSize: "1.5rem", marginTop: "40px", marginBottom: "10px" }}>Upcoming Events</h2>
-      <ul style={{ listStyle: "none", padding: 0 }}>
+      <h2 className="text-2xl font-semibold mt-10 mb-4">🎯 Upcoming Events</h2>
+      <ul className="space-y-4">
         {events.length > 0 ? (
           events.map((event) => (
-            <li
+            <motion.li
               key={event._id}
-              style={{
-                backgroundColor: "#fff",
-                padding: "15px",
-                marginBottom: "10px",
-                borderRadius: "10px",
-                boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-              }}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.3 }}
+              className="bg-white p-4 rounded-lg shadow-sm border border-gray-200"
             >
-              <strong>{event.title}</strong> <br />
-              {new Date(event.date).toLocaleString()} <br />
-              {event.location}
-            </li>
+              <p className="font-bold text-lg">{event.title}</p>
+              <p className="text-sm text-gray-600">
+                {new Date(event.date).toLocaleString()}
+              </p>
+              <p className="text-sm text-gray-700">{event.location}</p>
+            </motion.li>
           ))
         ) : (
-          <li>No events found.</li>
+          <li className="text-gray-500">No events found.</li>
         )}
       </ul>
-    </div>
+    </motion.div>
   );
 }
