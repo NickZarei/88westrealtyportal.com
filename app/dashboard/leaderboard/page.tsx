@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 
 interface User {
-  _id: string;
   name: string;
   email: string;
   points: number;
@@ -11,71 +11,78 @@ interface User {
 
 export default function LeaderboardPage() {
   const [users, setUsers] = useState<User[]>([]);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchUsers = async () => {
       const res = await fetch("/api/users");
       const data = await res.json();
-
       if (Array.isArray(data)) {
-        const sorted = data
-          .filter((u: User) => u.points > 0)
-          .sort((a, b) => b.points - a.points);
+        const sorted = data.sort((a, b) => b.points - a.points);
         setUsers(sorted);
       }
-      setLoading(false);
     };
-
     fetchUsers();
   }, []);
 
-  const getRowColor = (index: number) => {
-    if (index === 0) return "bg-yellow-100";
-    if (index === 1) return "bg-gray-100";
-    if (index === 2) return "bg-amber-100";
-    return "bg-white";
+  const getMedal = (i: number) => {
+    return i === 0
+      ? "🥇"
+      : i === 1
+      ? "🥈"
+      : i === 2
+      ? "🥉"
+      : "";
+  };
+
+  const getRowColor = (i: number) => {
+    return i === 0
+      ? "bg-yellow-100"
+      : i === 1
+      ? "bg-gray-100"
+      : i === 2
+      ? "bg-amber-100"
+      : "bg-white";
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-red-100 to-white py-10 px-4">
-      <div className="max-w-3xl mx-auto bg-white p-6 rounded-2xl shadow-lg border border-red-200">
-        <h1 className="text-3xl font-bold text-center mb-6 text-red-700">
-          🏆 Agent Points Leaderboard
-        </h1>
+    <motion.div
+      initial={{ opacity: 0, y: 40 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className="max-w-3xl mx-auto p-6 mt-10 bg-white rounded-xl shadow-md"
+    >
+      <h1 className="text-3xl font-bold text-red-700 mb-6 text-center">🏆 Agent Leaderboard</h1>
 
-        {loading ? (
-          <p className="text-center text-gray-500">Loading...</p>
-        ) : users.length === 0 ? (
-          <p className="text-center text-gray-600 italic">No users with points yet.</p>
-        ) : (
-          <table className="w-full table-auto text-left border-separate border-spacing-y-2">
-            <thead>
-              <tr className="text-red-600 text-sm uppercase tracking-wider">
-                <th>#</th>
-                <th>Name</th>
-                <th>Email</th>
-                <th className="text-right">Points</th>
+      <div className="overflow-x-auto">
+        <table className="min-w-full divide-y divide-gray-300">
+          <thead>
+            <tr className="text-left bg-gray-100">
+              <th className="py-3 px-4">#</th>
+              <th className="py-3 px-4">Name</th>
+              <th className="py-3 px-4">Email</th>
+              <th className="py-3 px-4">Points</th>
+            </tr>
+          </thead>
+          <tbody>
+            {users.length === 0 ? (
+              <tr>
+                <td className="py-4 px-4" colSpan={4}>
+                  No users found.
+                </td>
               </tr>
-            </thead>
-            <tbody>
-              {users.map((user, i) => (
-                <tr
-                  key={user._id}
-                  className={`${getRowColor(i)} hover:bg-red-50 transition rounded-lg`}
-                >
-                  <td className="py-2 px-2 font-bold text-center text-red-700">{i + 1}</td>
-                  <td className="py-2 px-2 font-medium">{user.name}</td>
-                  <td className="py-2 px-2 text-sm text-gray-600">{user.email}</td>
-                  <td className="py-2 px-2 text-right font-semibold text-red-600">
-                    {user.points}
-                  </td>
+            ) : (
+              users.map((user, i) => (
+                <tr key={user.email} className={`${getRowColor(i)} hover:bg-red-50`}>
+                  <td className="py-3 px-4 font-bold">{getMedal(i) || i + 1}</td>
+                  <td className="py-3 px-4">{user.name || "—"}</td>
+                  <td className="py-3 px-4 text-sm text-gray-600">{user.email}</td>
+                  <td className="py-3 px-4 font-semibold text-red-600">{user.points}</td>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
+              ))
+            )}
+          </tbody>
+        </table>
       </div>
-    </div>
+    </motion.div>
   );
 }
