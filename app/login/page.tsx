@@ -9,8 +9,10 @@ export default function LoginPage() {
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    if (password === "88admin") {
-      document.cookie = "admin=1; path=/"; // ✅ sets cookie
+    const trimmed = password.trim();
+
+    if (trimmed === "88admin") {
+      document.cookie = "admin=1; path=/"; // or use sessionStorage.setItem('admin', 'true')
       router.push("/approvals");
     } else {
       alert("Incorrect admin password");
@@ -19,18 +21,22 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
-      <form onSubmit={handleLogin} className="bg-white shadow-md p-6 rounded w-full max-w-sm">
-        <h1 className="text-xl font-bold mb-4">Admin Login</h1>
+      <form
+        onSubmit={handleLogin}
+        className="bg-white shadow-md p-6 rounded w-full max-w-sm"
+      >
+        <h1 className="text-xl font-bold mb-4 text-center">Admin Login</h1>
         <input
           type="password"
           placeholder="Enter admin code"
           className="w-full p-2 border border-gray-300 rounded mb-4"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
+          required
         />
         <button
           type="submit"
-          className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
+          className="w-full bg-red-600 text-white py-2 rounded hover:bg-red-700 transition"
         >
           Login
         </button>
