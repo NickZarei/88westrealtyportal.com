@@ -15,15 +15,19 @@ export const authOptions: NextAuthOptions = {
         credentials: Record<"email" | "password", string> | undefined,
         _req: Pick<RequestInternal, "method" | "body" | "query" | "headers">
       ): Promise<User | null> {
-        // 🔐 Example static user for testing — replace with real DB logic
-        const user: User = {
-          id: "1",
-          name: "Test User",
-          email: credentials?.email,
-          role: "admin", // 👈 inject role manually or from DB
-        };
+        const valid = credentials?.email === credentials?.password;
 
-        return user; // return null if login fails
+        if (valid) {
+          const user: User = {
+            id: "marketing",
+            name: "Marketing Department",
+            email: credentials?.email,
+            role: "marketing",
+          };
+          return user;
+        }
+
+        return null;
       },
     }),
   ],
@@ -39,6 +43,7 @@ export const authOptions: NextAuthOptions = {
       return session;
     },
   },
+  secret: process.env.NEXTAUTH_SECRET,
 };
 
 const handler = NextAuth(authOptions);
