@@ -1,73 +1,95 @@
 "use client";
 
-import { useSession } from "next-auth/react";
 import { useState } from "react";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 export default function UploadPage() {
   const { data: session } = useSession();
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [uploading, setUploading] = useState(false);
+  const router = useRouter();
+
+  const [type, setType] = useState("");
+  const [notes, setNotes] = useState("");
+  const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState("");
 
-  const handleUpload = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedFile) return;
 
-    setUploading(true);
+    if (!type) return setMessage("Please select an activity type.");
+
+    setSubmitting(true);
     setMessage("");
 
     try {
-      const formData = new FormData();
-      formData.append("file", selectedFile);
-
-      const res = await fetch("/api/upload", {
+      const res = await fetch("/api/events", {
         method: "POST",
-        body: formData,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type,
+          notes,
+          createdBy: session?.user?.email,
+          status: "Pending",
+        }),
       });
 
       if (res.ok) {
-        setMessage("✅ File uploaded successfully!");
-        setSelectedFile(null);
+        setMessage("✅ Activity submitted for approval!");
+        setType("");
+        setNotes("");
+        setTimeout(() => router.push("/dashboard"), 1500);
       } else {
-        setMessage("❌ Upload failed.");
+        setMessage("❌ Submission failed.");
       }
     } catch (err) {
-      console.error("Upload error:", err);
-      setMessage("❌ Upload failed.");
+      console.error("Submit error:", err);
+      setMessage("❌ Something went wrong.");
     } finally {
-      setUploading(false);
+      setSubmitting(false);
     }
   };
 
-  if (session?.user?.role !== "marketing" && session?.user?.role !== "admin") {
-    return (
-      <div className="max-w-xl mx-auto p-6 text-red-600 text-center">
-        You do not have permission to upload files.
-      </div>
-    );
+  if (!session) {
+    return <p className="p-6 text-center">Please log in to submit activities.</p>;
   }
 
   return (
-    <div className="max-w-xl mx-auto p-6">
-      <h1 className="text-2xl font-bold text-red-700 mb-4">📤 Upload File</h1>
+    <div className="max-w-xl mx-auto p-6 bg-white rounded shadow mt-10">
+      <h1 className="text-2xl font-bold mb-4 text-red-700">📥 Submit Your Activity</h1>
 
-      <form onSubmit={handleUpload} className="space-y-4">
-        <input
-          type="file"
-          onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
-          className="w-full border rounded p-2"
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <select
+          value={type}
+          onChange={(e) => setType(e.target.value)}
+          className="w-full border p-2 rounded"
+          required
+        >
+          <option value="">Select Activity Type</option>
+          <option value="Google Review">Google Review</option>
+          <option value="Office Event Attendance">Office Event Attendance</option>
+          <option value="88West Video Content">88West Video Content</option>
+          <option value="Recruit Realtor A">Recruit Realtor A (0–2 yrs)</option>
+          <option value="Recruit Realtor B">Recruit Realtor B (2+ yrs)</option>
+          <option value="Community Event">Community Event</option>
+        </select>
+
+        <textarea
+          placeholder="Optional notes or description"
+          value={notes}
+          onChange={(e) => setNotes(e.target.value)}
+          className="w-full border p-2 rounded"
         />
 
         <button
           type="submit"
-          disabled={uploading}
-          className="w-full bg-red-600 text-white font-semibold py-2 px-4 rounded hover:bg-red-700 disabled:opacity-50"
+          disabled={submitting}
+          className="w-full bg-red-600 text-white py-2 rounded hover:bg-red-700 disabled:opacity-60"
         >
-          {uploading ? "Uploading..." : "Upload File"}
+          {submitting ? "Submitting..." : "Submit Activity"}
         </button>
       </form>
 
-      {message && <p className="mt-4 text-center text-sm">{message}</p>}
+      {message && <p className="mt-4 text-center text-sm text-gray-700">{message}</p>}
     </div>
   );
 }

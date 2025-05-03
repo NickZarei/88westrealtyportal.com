@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server";
-import  dbConnect  from "@/lib/dbConnect";
-import Event from "@/models/Event";
+import dbConnect from "../../../../lib/dbConnect";
+import Event from "../../../../models/Event";
 
-// DELETE: Remove an event by ID
 export async function DELETE(
   req: Request,
   { params }: { params: { id: string } }
@@ -10,7 +9,6 @@ export async function DELETE(
   try {
     await dbConnect();
     const eventId = params.id;
-
     const deleted = await Event.findByIdAndDelete(eventId);
 
     if (!deleted) {
@@ -22,13 +20,11 @@ export async function DELETE(
 
     return NextResponse.json({
       success: true,
-      message: "✅ Event deleted successfully",
+      message: "Event deleted successfully",
     });
   } catch (error) {
     return NextResponse.json(
-      {
-        success: false,
-        error: error instanceof Error ? error.message : "Unknown error" },
+      { success: false, error: error instanceof Error ? error.message : "Unknown error" },
       { status: 500 }
     );
   }
