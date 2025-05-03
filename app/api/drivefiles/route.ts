@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import connectDB from "@/lib/connectDb";
+import dbConnect from "@/lib/dbConnect";
 import DriveFile from "@/models/DriveFile";
 
 // Fixing the types for the DELETE request
@@ -8,7 +8,7 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    await connectDB();  // Make sure your connection is successful
+    await dbConnect();  // Make sure your connection is successful
     const deleted = await DriveFile.findByIdAndDelete(params.id);  // Ensure proper object ID is used
 
     if (!deleted) {

@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import connectDb from "@/lib/connectDb";
+import dbConnect from "@/lib/dbConnect";
 import Activity from "@/models/Activity";
 
 export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
-  await connectDb();
+  await dbConnect();
 
   const body = await req.json();
   const updated = await Activity.findByIdAndUpdate(

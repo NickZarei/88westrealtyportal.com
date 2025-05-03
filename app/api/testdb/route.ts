@@ -1,9 +1,9 @@
-import connectDB  from "@/lib/connectDb";
+import dbConnect  from "@/lib/dbConnect";
 import { NextResponse } from "next/server";
 
 export async function GET() {
   try {
-    await connectDB();
+    await dbConnect();
     return NextResponse.json({ success: true, message: "✅ DB connected" });
   } catch (error) {
     console.error("❌ DB Error:", error);

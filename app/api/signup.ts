@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
-import connectDb from "@/lib/connectDb";
+import dbConnect from "@/lib/dbConnect";
 import User from "@/models/User"; // or your model file
 
 export async function POST(req: Request) {
   try {
-    await connectDb();
+    await dbConnect();
     const form = await req.json();
 
     const codes: Record<string, string | undefined> = {

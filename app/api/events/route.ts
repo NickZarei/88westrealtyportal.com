@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import  connectDB  from "@/lib/connectDb";
+import  dbConnect  from "@/lib/dbConnect";
 import Event from "@/models/Event";
 
 // DELETE: Remove an event by ID
@@ -8,7 +8,7 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ): Promise<NextResponse> {
   try {
-    await connectDB();
+    await dbConnect();
     const eventId = params.id;
 
     const deleted = await Event.findByIdAndDelete(eventId);
