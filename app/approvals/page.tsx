@@ -1,6 +1,6 @@
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
-import { authOptions } from "@/lib/auth"; // adjust path if needed
+import { authOptions } from "@lib/auth"; 
 import { Session } from "next-auth";
 
 const checkAccess = (session: Session | null): boolean => {
