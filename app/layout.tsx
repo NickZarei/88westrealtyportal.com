@@ -13,11 +13,11 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
       <head>
-        <link rel="icon" href="/favicon.ico" /> {/* ✅ Favicon */}
-        <title>88West Realty Portal</title>
-        <meta name="description" content="Team dashboard and approvals system" />
+        <link rel="icon" href="/favicon.ico" />
+        <title>{metadata.title}</title>
+        <meta name="description" content={metadata.description} />
       </head>
-      <body style={{ margin: 0 }}>
+      <body className="bg-gray-50 text-gray-900">
         <ClientLayout>
           <Navbar />
           <ClientToaster />

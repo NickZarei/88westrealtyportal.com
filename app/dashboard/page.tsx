@@ -1,106 +1,100 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { toast } from "react-hot-toast";
+import { motion } from "framer-motion";
 
-interface Activity {
-  _id: string;
-  type: string;
-  notes?: string;
-  createdBy?: string;
-  status: string;
-}
-
-export default function DashboardPage() {
+export default function UploadPage() {
   const { data: session } = useSession();
-  const [activities, setActivities] = useState<Activity[]>([]);
-  const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
-  useEffect(() => {
-    const fetchActivities = async () => {
-      try {
-        const res = await fetch("/api/events");
-        const all = await res.json();
-        const mine = all.filter(
-          (a: Activity) => a.createdBy === session?.user?.email
-        );
-        setActivities(mine);
-      } catch (err) {
-        console.error("Failed to load activities", err);
-      } finally {
-        setLoading(false);
+  const [type, setType] = useState("");
+  const [notes, setNotes] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!type) return toast.error("Please select an activity type");
+
+    setSubmitting(true);
+
+    try {
+      const res = await fetch("/api/events", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type,
+          notes,
+          createdBy: session?.user?.email,
+          status: "Pending",
+        }),
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        toast.success("✅ Activity submitted for approval!");
+        setType("");
+        setNotes("");
+        setTimeout(() => router.push("/dashboard"), 1500);
+      } else {
+        throw new Error(data.error || "Submission failed");
       }
-    };
-
-    if (session?.user?.email) {
-      fetchActivities();
+    } catch (err: any) {
+      toast.error("❌ " + err.message);
+    } finally {
+      setSubmitting(false);
     }
-  }, [session?.user?.email]);
+  };
 
-  const points = activities.reduce(
-    (total, act) => (act.status === "Approved" ? total + 10 : total),
-    0
-  );
-  const approvedCount = activities.filter((a) => a.status === "Approved").length;
-  const rejectedCount = activities.filter((a) => a.status === "Rejected").length;
+  if (!session) {
+    return <p className="p-6 text-center">Please log in to submit activities.</p>;
+  }
 
   return (
-    <div className="min-h-screen bg-gray-100 py-10 px-6">
-      <div className="max-w-3xl mx-auto bg-white p-6 rounded shadow-md">
-        <h1 className="text-2xl font-bold text-red-700 mb-2">
-          👋 Welcome, {session?.user?.name || "Agent"}
-        </h1>
+    <motion.div
+      initial={{ opacity: 0, y: 30 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className="max-w-xl mx-auto p-6 bg-gradient-to-br from-red-50 to-white rounded-xl shadow-md mt-10"
+    >
+      <h1 className="text-2xl font-bold text-red-700 mb-4 text-center">
+        📥 Submit Your Activity
+      </h1>
 
-        <p className="text-sm text-gray-600 mb-4">📧 {session?.user?.email}</p>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <select
+          value={type}
+          onChange={(e) => setType(e.target.value)}
+          className="w-full p-3 border border-gray-300 rounded"
+          required
+        >
+          <option value="">Select Activity Type</option>
+          <option value="Google Review">Google Review</option>
+          <option value="Office Event Attendance">Office Event Attendance</option>
+          <option value="88West Video Content">88West Video Content</option>
+          <option value="Recruit Realtor A">Recruit Realtor A (0–2 yrs)</option>
+          <option value="Recruit Realtor B">Recruit Realtor B (2+ yrs)</option>
+          <option value="Community Event">Community Event</option>
+        </select>
 
-        <div className="bg-gray-50 p-4 rounded mb-6 border border-gray-200">
-          <p className="text-xl mb-2">
-            🎯 <strong>Total Points:</strong> {points}
-          </p>
-          <p>
-            ✅ <strong>Approved:</strong> {approvedCount} | ❌ <strong>Rejected:</strong>{" "}
-            {rejectedCount}
-          </p>
-        </div>
+        <textarea
+          placeholder="Optional notes or description"
+          value={notes}
+          onChange={(e) => setNotes(e.target.value)}
+          className="w-full p-3 border border-gray-300 rounded"
+        />
 
-        <h2 className="text-lg font-semibold mb-4">📝 Your Submitted Activities</h2>
-
-        {loading ? (
-          <p className="text-gray-600">Loading...</p>
-        ) : activities.length === 0 ? (
-          <p className="text-gray-600 italic">No activities submitted yet.</p>
-        ) : (
-          <div className="space-y-4">
-            {activities.map((activity) => (
-              <div
-                key={activity._id}
-                className="border border-gray-200 p-4 rounded bg-white shadow-sm"
-              >
-                <p>
-                  <strong>Type:</strong> {activity.type}
-                </p>
-                <p>
-                  <strong>Status:</strong>{" "}
-                  <span
-                    className={
-                      activity.status === "Approved"
-                        ? "text-green-600"
-                        : activity.status === "Rejected"
-                        ? "text-red-600"
-                        : "text-gray-700"
-                    }
-                  >
-                    {activity.status}
-                  </span>
-                </p>
-                <p>
-                  <strong>Notes:</strong> {activity.notes || "—"}
-                </p>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-    </div>
+        <button
+          type="submit"
+          disabled={submitting}
+          className="w-full bg-red-600 text-white py-2 rounded hover:bg-red-700 disabled:opacity-60"
+        >
+          {submitting ? "Submitting..." : "Submit Activity"}
+        </button>
+      </form>
+    </motion.div>
   );
 }
