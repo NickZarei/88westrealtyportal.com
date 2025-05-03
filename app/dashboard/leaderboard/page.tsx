@@ -30,6 +30,13 @@ export default function LeaderboardPage() {
     fetchUsers();
   }, []);
 
+  const getRowColor = (index: number) => {
+    if (index === 0) return "bg-yellow-100";
+    if (index === 1) return "bg-gray-100";
+    if (index === 2) return "bg-amber-100";
+    return "bg-white";
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-red-100 to-white py-10 px-4">
       <div className="max-w-3xl mx-auto bg-white p-6 rounded-2xl shadow-lg border border-red-200">
@@ -55,8 +62,7 @@ export default function LeaderboardPage() {
               {users.map((user, i) => (
                 <tr
                   key={user._id}
-                  className={`bg-${i === 0 ? "yellow" : i === 1 ? "gray" : i === 2 ? "amber" : "white"
-                    }-100 hover:bg-red-50 transition rounded-lg`}
+                  className={`${getRowColor(i)} hover:bg-red-50 transition rounded-lg`}
                 >
                   <td className="py-2 px-2 font-bold text-center text-red-700">{i + 1}</td>
                   <td className="py-2 px-2 font-medium">{user.name}</td>
