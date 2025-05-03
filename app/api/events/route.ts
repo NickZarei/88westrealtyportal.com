@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { connectDB } from "@/lib/connectDb";
+import  connectDB  from "@/lib/connectDb";
 import Event from "@/models/Event";
 
 // DELETE: Remove an event by ID

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { connectDB } from "@/lib/connectDb";
+import  connectDB  from "@/lib/connectDb";
 import DriveFile from "@/models/DriveFile";
 
 // Fixing the types for the DELETE request
