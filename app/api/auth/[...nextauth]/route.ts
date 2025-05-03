@@ -1,9 +1,8 @@
-import NextAuth, { NextAuthOptions } from "next-auth";
+import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import type { User } from "next-auth";
-import type { RequestInternal } from "next-auth";
+import type { NextAuthOptions } from "next-auth";
 
-export const authOptions: NextAuthOptions = {
+const authOptions: NextAuthOptions = {
   providers: [
     CredentialsProvider({
       name: "Credentials",
@@ -11,20 +10,16 @@ export const authOptions: NextAuthOptions = {
         email: { label: "Email", type: "text" },
         password: { label: "Password", type: "password" },
       },
-      async authorize(
-        credentials: Record<"email" | "password", string> | undefined,
-        _req: Pick<RequestInternal, "method" | "body" | "query" | "headers">
-      ): Promise<User | null> {
-        const valid = credentials?.email === credentials?.password;
+      async authorize(credentials) {
+        const isValid = credentials?.email === credentials?.password;
 
-        if (valid) {
-          const user: User = {
+        if (isValid) {
+          return {
             id: "marketing",
             name: "Marketing Department",
             email: credentials?.email,
-            role: "marketing",
+            role: "marketing" as const,
           };
-          return user;
         }
 
         return null;
@@ -32,14 +27,20 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   callbacks: {
-    async jwt({ token, user }: { token: any; user: any }) {
-      if (user?.role) {
+    async jwt({ token, user }) {
+      if (user && user.role) {
         token.role = user.role;
       }
       return token;
     },
-    async session({ session, token }: { session: any; token: any }) {
-      session.user.role = token.role;
+    async session({ session, token }) {
+      session.user.role = token.role as
+        | "admin"
+        | "agent"
+        | "marketing"
+        | "ceo"
+        | "hr"
+        | "operations";
       return session;
     },
   },
