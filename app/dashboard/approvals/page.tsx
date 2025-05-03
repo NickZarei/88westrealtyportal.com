@@ -3,21 +3,24 @@
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 
+interface Activity {
+  _id: string;
+  type: string;
+  notes?: string;
+  createdBy: string;
+  status: string;
+}
+
 export default function ApprovalsPage() {
   const { data: session, status } = useSession();
-  const [activities, setActivities] = useState<any[]>([]);
+  const [activities, setActivities] = useState<Activity[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // ✅ Block unauthorized roles
-  if (
-    status === "loading"
-  ) return <p className="p-6">Checking permissions...</p>;
+  // ✅ Role protection
+  if (status === "loading") return <p className="p-6">Checking permissions...</p>;
 
-  if (
-    session?.user?.role !== "admin" &&
-    session?.user?.role !== "hr"
-  ) {
-    return <p className="p-6 text-red-600">Access denied.</p>;
+  if (!["admin", "hr", "ceo"].includes(session?.user?.role || "")) {
+    return <p className="p-6 text-red-600">🚫 Access denied. Only admin, HR, or CEO can view this page.</p>;
   }
 
   useEffect(() => {
@@ -27,7 +30,7 @@ export default function ApprovalsPage() {
         const data = await res.json();
 
         if (Array.isArray(data)) {
-          const pending = data.filter((a: any) => a.status === "Pending");
+          const pending = data.filter((a: Activity) => a.status === "Pending");
           setActivities(pending);
         } else {
           console.error("Invalid response format:", data);
@@ -42,35 +45,54 @@ export default function ApprovalsPage() {
     fetchActivities();
   }, []);
 
-  const updateStatus = async (id: string, status: string) => {
+  const handleApprove = async (id: string) => {
+    try {
+      const res = await fetch(`/api/events/${id}/approve`, {
+        method: "POST",
+      });
+
+      if (res.ok) {
+        setActivities((prev) => prev.filter((a) => a._id !== id));
+        alert("✅ Activity approved and points assigned!");
+      } else {
+        const err = await res.text();
+        alert("Approval failed: " + err);
+      }
+    } catch (err) {
+      console.error("Approval error:", err);
+      alert("Something went wrong while approving.");
+    }
+  };
+
+  const handleReject = async (id: string) => {
     try {
       const res = await fetch(`/api/events/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status }),
+        body: JSON.stringify({ status: "Rejected" }),
       });
 
       const result = await res.json();
 
       if (result.success) {
         setActivities((prev) => prev.filter((a) => a._id !== id));
-        alert(`Activity ${status.toLowerCase()}ed!`);
+        alert("❌ Activity rejected.");
       } else {
-        alert("Update failed: " + result.error);
+        alert("Rejection failed: " + result.error);
       }
     } catch (err) {
-      console.error("Update error:", err);
-      alert("Something went wrong while updating status.");
+      console.error("Rejection error:", err);
+      alert("Something went wrong while rejecting.");
     }
   };
 
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4">📝 Pending Approvals</h1>
+      <h1 className="text-2xl font-bold mb-4 text-red-700">📝 Pending Activity Approvals</h1>
       {loading ? (
-        <p>Loading...</p>
+        <p>Loading activities...</p>
       ) : activities.length === 0 ? (
-        <p>No pending activities.</p>
+        <p className="text-gray-600 italic">No pending activities at the moment.</p>
       ) : (
         activities.map((activity) => (
           <div
@@ -84,14 +106,14 @@ export default function ApprovalsPage() {
             </div>
             <div className="flex gap-2">
               <button
-                onClick={() => updateStatus(activity._id, "Approved")}
-                className="bg-green-500 text-white px-4 py-1 rounded"
+                onClick={() => handleApprove(activity._id)}
+                className="bg-green-600 hover:bg-green-700 text-white px-4 py-1 rounded"
               >
                 Approve
               </button>
               <button
-                onClick={() => updateStatus(activity._id, "Rejected")}
-                className="bg-red-500 text-white px-4 py-1 rounded"
+                onClick={() => handleReject(activity._id)}
+                className="bg-red-600 hover:bg-red-700 text-white px-4 py-1 rounded"
               >
                 Reject
               </button>
