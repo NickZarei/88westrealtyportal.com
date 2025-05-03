@@ -31,31 +31,39 @@ export default function LeaderboardPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-100 py-10 px-4">
-      <div className="max-w-3xl mx-auto bg-white p-6 rounded shadow">
-        <h1 className="text-2xl font-bold mb-6 text-red-700">🏆 Points Leaderboard</h1>
+    <div className="min-h-screen bg-gradient-to-br from-red-100 to-white py-10 px-4">
+      <div className="max-w-3xl mx-auto bg-white p-6 rounded-2xl shadow-lg border border-red-200">
+        <h1 className="text-3xl font-bold text-center mb-6 text-red-700">
+          🏆 Agent Points Leaderboard
+        </h1>
 
         {loading ? (
-          <p>Loading...</p>
+          <p className="text-center text-gray-500">Loading...</p>
         ) : users.length === 0 ? (
-          <p className="text-gray-600 italic">No users with points yet.</p>
+          <p className="text-center text-gray-600 italic">No users with points yet.</p>
         ) : (
-          <table className="w-full text-left border-collapse">
+          <table className="w-full table-auto text-left border-separate border-spacing-y-2">
             <thead>
-              <tr className="border-b">
-                <th className="py-2">#</th>
-                <th className="py-2">Name</th>
-                <th className="py-2">Email</th>
-                <th className="py-2">Points</th>
+              <tr className="text-red-600 text-sm uppercase tracking-wider">
+                <th>#</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th className="text-right">Points</th>
               </tr>
             </thead>
             <tbody>
               {users.map((user, i) => (
-                <tr key={user._id} className="border-b hover:bg-gray-50">
-                  <td className="py-2 font-bold">{i + 1}</td>
-                  <td className="py-2">{user.name}</td>
-                  <td className="py-2 text-sm text-gray-600">{user.email}</td>
-                  <td className="py-2 text-red-600 font-semibold">{user.points}</td>
+                <tr
+                  key={user._id}
+                  className={`bg-${i === 0 ? "yellow" : i === 1 ? "gray" : i === 2 ? "amber" : "white"
+                    }-100 hover:bg-red-50 transition rounded-lg`}
+                >
+                  <td className="py-2 px-2 font-bold text-center text-red-700">{i + 1}</td>
+                  <td className="py-2 px-2 font-medium">{user.name}</td>
+                  <td className="py-2 px-2 text-sm text-gray-600">{user.email}</td>
+                  <td className="py-2 px-2 text-right font-semibold text-red-600">
+                    {user.points}
+                  </td>
                 </tr>
               ))}
             </tbody>
