@@ -33,14 +33,16 @@ export default function LoginPage() {
 
   return (
     <div className="max-w-md mx-auto mt-20 p-6 bg-white shadow-md rounded-xl">
-      <h2 className="text-2xl font-bold text-center text-red-600 mb-6">Login to 88West Portal</h2>
+      <h2 className="text-2xl font-bold text-center text-red-600 mb-6">
+        Login to 88West Portal
+      </h2>
       <form onSubmit={handleLogin} className="space-y-4">
         <input
           type="text"
           placeholder="Username"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
-          className="w-full p-2 border rounded"
+          className="w-full p-3 border border-gray-300 rounded"
           required
         />
         <input
@@ -48,13 +50,15 @@ export default function LoginPage() {
           placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="w-full p-2 border rounded"
+          className="w-full p-3 border border-gray-300 rounded"
           required
         />
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-red-600 text-white py-2 rounded hover:bg-red-700 disabled:opacity-50"
+          className={`w-full bg-red-600 text-white py-2 rounded hover:bg-red-700 transition ${
+            loading ? "opacity-50 cursor-not-allowed" : ""
+          }`}
         >
           {loading ? "Logging in..." : "Login"}
         </button>

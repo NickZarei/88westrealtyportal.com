@@ -14,14 +14,13 @@ export default function UploadPage() {
   const [notes, setNotes] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
-  // ✅ Step: Role-based access control
   useEffect(() => {
     if (status === "authenticated") {
-      const allowedRoles = ["Agent", "Marketing", "Operation"];
-      const userRole = session?.user?.role || "";
+      const allowedRoles = ["agent", "marketing", "operation"];
+      const userRole = (session?.user?.role || "").toLowerCase();
 
       if (!allowedRoles.includes(userRole)) {
-        toast.error("⛔ Access Denied");
+        toast.error("⛔ Access Denied: Upload restricted");
         router.push("/dashboard");
       }
     }
@@ -63,10 +62,7 @@ export default function UploadPage() {
   };
 
   if (status === "loading") return <p className="p-6 text-center">Loading...</p>;
-
-  if (!session) {
-    return <p className="p-6 text-center">Please log in to submit activities.</p>;
-  }
+  if (!session) return <p className="p-6 text-center">Please log in to submit activities.</p>;
 
   return (
     <motion.div
