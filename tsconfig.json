@@ -20,8 +20,10 @@
       "@/*": ["./*"]
     },
 
-    // ✅ Type declaration folders
+    // ✅ Custom types folder
     "typeRoots": ["./types", "./node_modules/@types"],
+
+    // ✅ Included types (add others if needed)
     "types": ["react", "react-dom"],
 
     "plugins": [{ "name": "next" }]
@@ -31,8 +33,7 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    "types/**/*.d.ts",
-    "next-auth.d.ts"
+    "types/**/*.d.ts"
   ],
   "exclude": ["node_modules"]
 }

@@ -1,27 +1,6 @@
 "use client";
 
 import { useSession } from "next-auth/react";
-
-// Extend the user type to include the 'points' property
-declare module "next-auth" {
-  interface User {
-    name?: string | null;
-    email?: string | null;
-    image?: string | null;
-    role?: "admin" | "agent" | "marketing" | "ceo" | "hr" | "operations";
-    points?: number;
-  }
-
-  interface Session {
-    User: {
-      name?: string | null;
-      email?: string | null;
-      image?: string | null;
-      role?: "admin" | "agent" | "marketing" | "ceo" | "hr" | "operations";
-      points?: number;
-    };
-  }
-}
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { motion } from "framer-motion";
@@ -38,11 +17,11 @@ export default function DashboardPage() {
   }, [status, router]);
 
   if (status === "loading") return <p className="p-6 text-center">Loading...</p>;
-  if (!session) return null;
+  if (!session?.user) return null;
 
-  const name = session.user?.name || "User";
-  const role = session.user?.role || "Unknown";
-  const points = session.user?.points || 0;
+  const name = session.user.name || "User";
+  const role = session.user.role || "Unknown";
+  const points = session.user.points || 0;
 
   const tiles = [
     { label: "📥 Upload Activity", href: "/dashboard/upload" },
