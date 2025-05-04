@@ -1,7 +1,7 @@
 import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { connectToDB } from "@/lib/db";
-import { verifyPassword } from "@/lib/hash";
+import { connectToDB } from "../../../lib/db";
+import { verifyPassword } from "../../../lib/hash";
 
 export const authOptions: NextAuthOptions = {
   providers: [
