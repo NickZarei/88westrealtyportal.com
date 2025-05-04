@@ -1,7 +1,7 @@
 import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { connectToDB } from "../../../lib/db";
-import { verifyPassword } from "../../../lib/hash";
+import { connectToDB } from "@/lib/db";
+import { verifyPassword } from "@/lib/hash";
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -11,40 +11,46 @@ export const authOptions: NextAuthOptions = {
         username: { label: "Username", type: "text" },
         password: { label: "Password", type: "password" },
       },
-      async authorize(credentials) {
-        if (!credentials?.username || !credentials?.password) {
-          throw new Error("Missing username or password");
+      authorize: async (credentials) => {
+        try {
+          if (!credentials?.username || !credentials?.password) {
+            return null;
+          }
+
+          const db = await connectToDB();
+          const user = await db.collection("users").findOne({ username: credentials.username });
+
+          if (!user) return null;
+
+          const isValid = await verifyPassword(credentials.password, user.password);
+          if (!isValid) return null;
+
+          return {
+            id: user._id.toString(),
+            name: `${user.firstName} ${user.lastName}`,
+            email: user.email,
+            role: user.role,
+            points: user.points ?? 0,
+          };
+        } catch (error) {
+          console.error("NextAuth authorize error:", error);
+          return null;
         }
-
-        const db = await connectToDB();
-        const user = await db.collection("users").findOne({
-          username: credentials.username,
-        });
-
-        if (!user) throw new Error("No user found");
-
-        const isValid = await verifyPassword(credentials.password, user.password);
-        if (!isValid) throw new Error("Invalid password");
-
-        return {
-          id: user._id.toString(),
-          name: `${user.firstName} ${user.lastName}`,
-          email: user.email,
-          role: user.role,
-        };
       },
     }),
   ],
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.role = user.role;
+        token.role = user.role as "admin" | "agent" | "marketing" | "ceo" | "hr" | "operations";
+        token.points = user.points ?? 0;
       }
       return token;
     },
     async session({ session, token }) {
-      if (session.user && token.role) {
-        session.user.role = token.role as "admin" | "agent" | "marketing" | "ceo" | "hr" | "operations" | undefined;
+      if (session.user) {
+        session.user.role = token.role as "admin" | "agent" | "marketing" | "ceo" | "hr" | "operations";
+        session.user.points = token.points as number;
       }
       return session;
     },

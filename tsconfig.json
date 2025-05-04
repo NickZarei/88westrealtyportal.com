@@ -14,17 +14,13 @@
     "jsx": "preserve",
     "incremental": true,
 
-    // ✅ Path aliasing
     "baseUrl": ".",
     "paths": {
       "@/*": ["./*"]
     },
 
-    // ✅ Custom types folder
     "typeRoots": ["./types", "./node_modules/@types"],
-
-    // ✅ Included types (add others if needed)
-    "types": ["react", "react-dom"],
+    "types": ["next-auth", "react", "react-dom"],
 
     "plugins": [{ "name": "next" }]
   },

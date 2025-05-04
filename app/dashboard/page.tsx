@@ -8,6 +8,10 @@ import Link from "next/link";
 
 export default function DashboardPage() {
   const { data: session, status } = useSession();
+
+  // ✅ Add the console log RIGHT HERE
+  console.log("Session:", session);
+
   const router = useRouter();
 
   useEffect(() => {
