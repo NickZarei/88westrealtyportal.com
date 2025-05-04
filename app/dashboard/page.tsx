@@ -18,7 +18,7 @@ export default function UploadPage() {
   useEffect(() => {
     if (status === "authenticated") {
       const allowedRoles = ["Agent", "Marketing", "Operation"];
-      const userRole = session?.user?.role;
+      const userRole = session?.user?.role || "";
 
       if (!allowedRoles.includes(userRole)) {
         toast.error("⛔ Access Denied");

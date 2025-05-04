@@ -12,6 +12,10 @@ export const authOptions: NextAuthOptions = {
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
+        if (!credentials?.username || !credentials?.password) {
+          throw new Error("Missing username or password");
+        }
+
         const db = await connectToDB();
         const user = await db.collection("users").findOne({
           username: credentials.username,
@@ -33,19 +37,23 @@ export const authOptions: NextAuthOptions = {
   ],
   callbacks: {
     async jwt({ token, user }) {
-      if (user) token.role = user.role;
+      if (user) {
+        token.role = user.role;
+      }
       return token;
     },
     async session({ session, token }) {
-      if (session.user) session.user.role = token.role;
+      if (session.user && token.role) {
+        session.user.role = token.role as "admin" | "agent" | "marketing" | "ceo" | "hr" | "operations" | undefined;
+      }
       return session;
     },
   },
-  pages: {
-    signIn: "/login",
-  },
   session: {
     strategy: "jwt",
+  },
+  pages: {
+    signIn: "/login",
   },
   secret: process.env.NEXTAUTH_SECRET,
 };
