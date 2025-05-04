@@ -1,25 +1,37 @@
+// ✅ Updated UploadPage with error-free logic
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { toast } from "react-hot-toast";
+import { motion } from "framer-motion";
 
 export default function UploadPage() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const router = useRouter();
 
   const [type, setType] = useState("");
   const [notes, setNotes] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [message, setMessage] = useState("");
+
+  useEffect(() => {
+    if (status === "authenticated") {
+      const allowedRoles = ["agent", "marketing", "operation"];
+      const userRole = (session?.user?.role || "").toLowerCase();
+
+      if (!allowedRoles.includes(userRole)) {
+        toast.error("⛔ Access Denied: Upload restricted");
+        router.push("/dashboard");
+      }
+    }
+  }, [session, status, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (!type) return setMessage("Please select an activity type.");
+    if (!type) return toast.error("Please select an activity type");
 
     setSubmitting(true);
-    setMessage("");
 
     try {
       const res = await fetch("/api/events", {
@@ -33,35 +45,42 @@ export default function UploadPage() {
         }),
       });
 
-      if (res.ok) {
-        setMessage("✅ Activity submitted for approval!");
+      const data = await res.json();
+
+      if (data.success) {
+        toast.success("✅ Activity submitted for approval!");
         setType("");
         setNotes("");
         setTimeout(() => router.push("/dashboard"), 1500);
       } else {
-        setMessage("❌ Submission failed.");
+        throw new Error(data.error || "Submission failed");
       }
-    } catch (err) {
-      console.error("Submit error:", err);
-      setMessage("❌ Something went wrong.");
+    } catch (err: any) {
+      toast.error("❌ " + err.message);
     } finally {
       setSubmitting(false);
     }
   };
 
-  if (!session) {
-    return <p className="p-6 text-center">Please log in to submit activities.</p>;
-  }
+  if (status === "loading") return <p className="p-6 text-center">Loading...</p>;
+  if (!session) return <p className="p-6 text-center">Please log in to submit activities.</p>;
 
   return (
-    <div className="max-w-xl mx-auto p-6 bg-white rounded shadow mt-10">
-      <h1 className="text-2xl font-bold mb-4 text-red-700">📥 Submit Your Activity</h1>
+    <motion.div
+      initial={{ opacity: 0, y: 30 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className="max-w-xl mx-auto p-6 bg-gradient-to-br from-red-50 to-white rounded-xl shadow-md mt-10"
+    >
+      <h1 className="text-2xl font-bold text-red-700 mb-4 text-center">
+        📥 Submit Your Activity
+      </h1>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <select
           value={type}
           onChange={(e) => setType(e.target.value)}
-          className="w-full border p-2 rounded"
+          className="w-full p-3 border border-gray-300 rounded"
           required
         >
           <option value="">Select Activity Type</option>
@@ -77,7 +96,7 @@ export default function UploadPage() {
           placeholder="Optional notes or description"
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
-          className="w-full border p-2 rounded"
+          className="w-full p-3 border border-gray-300 rounded"
         />
 
         <button
@@ -88,8 +107,6 @@ export default function UploadPage() {
           {submitting ? "Submitting..." : "Submit Activity"}
         </button>
       </form>
-
-      {message && <p className="mt-4 text-center text-sm text-gray-700">{message}</p>}
-    </div>
+    </motion.div>
   );
 }
