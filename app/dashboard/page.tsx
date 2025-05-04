@@ -1,18 +1,31 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { toast } from "react-hot-toast";
 import { motion } from "framer-motion";
 
 export default function UploadPage() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const router = useRouter();
 
   const [type, setType] = useState("");
   const [notes, setNotes] = useState("");
   const [submitting, setSubmitting] = useState(false);
+
+  // ✅ Step: Role-based access control
+  useEffect(() => {
+    if (status === "authenticated") {
+      const allowedRoles = ["Agent", "Marketing", "Operation"];
+      const userRole = session?.user?.role;
+
+      if (!allowedRoles.includes(userRole)) {
+        toast.error("⛔ Access Denied");
+        router.push("/dashboard");
+      }
+    }
+  }, [session, status, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -48,6 +61,8 @@ export default function UploadPage() {
       setSubmitting(false);
     }
   };
+
+  if (status === "loading") return <p className="p-6 text-center">Loading...</p>;
 
   if (!session) {
     return <p className="p-6 text-center">Please log in to submit activities.</p>;
