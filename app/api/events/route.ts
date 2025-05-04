@@ -1,30 +1,35 @@
+import { connectToDB } from "@/lib/db";
 import { NextRequest, NextResponse } from "next/server";
-import dbConnect from "../../../lib/dbConnect";
-import Event from "../../../models/Event";
 
 export async function POST(req: NextRequest) {
   try {
-    await dbConnect();
     const body = await req.json();
-    const newEvent = await Event.create(body);
-    return NextResponse.json({ success: true, event: newEvent });
+    if (!body.title || !body.date || !body.location) {
+      return NextResponse.json({ error: "Missing fields" }, { status: 400 });
+    }
+
+    const db = await connectToDB();
+    const result = await db.collection("events").insertOne({
+      title: body.title,
+      date: body.date,
+      location: body.location,
+      createdAt: new Date(),
+    });
+
+    return NextResponse.json({ success: true, insertedId: result.insertedId });
   } catch (error) {
-    return NextResponse.json(
-      { success: false, error: error instanceof Error ? error.message : "Unknown error" },
-      { status: 500 }
-    );
+    console.error("POST /api/events error:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
 
 export async function GET() {
   try {
-    await dbConnect();
-    const events = await Event.find().sort({ createdAt: -1 });
+    const db = await connectToDB();
+    const events = await db.collection("events").find({}).sort({ date: 1 }).toArray();
     return NextResponse.json(events);
   } catch (error) {
-    return NextResponse.json(
-      { success: false, error: error instanceof Error ? error.message : "Unknown error" },
-      { status: 500 }
-    );
+    console.error("GET /api/events error:", error);
+    return NextResponse.json({ error: "Failed to fetch events" }, { status: 500 });
   }
 }
