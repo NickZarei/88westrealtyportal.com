@@ -30,6 +30,15 @@ export default function FilesPage() {
     setLocation("");
   };
 
+  const deleteEvent = (id: string) => {
+    setEvents((prev) => prev.filter((event) => event.id !== id));
+  };
+
+  const futureEvents = events.filter((event) => {
+    const eventDate = new Date(event.date);
+    return eventDate > new Date();
+  });
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -75,13 +84,25 @@ export default function FilesPage() {
       </h2>
 
       <div className="space-y-6">
-        {events.map((event) => (
-          <div key={event.id} className="border-l-4 border-red-500 pl-4">
-            <p className="text-lg font-medium">{event.title}</p>
-            <p className="text-sm text-gray-600 font-semibold">
+        {futureEvents.length === 0 && (
+          <p className="text-gray-500">No upcoming events.</p>
+        )}
+        {futureEvents.map((event) => (
+          <div
+            key={event.id}
+            className="border-l-4 border-red-500 pl-4 bg-white p-3 rounded shadow"
+          >
+            <p className="text-lg font-medium text-black">{event.title}</p>
+            <p className="text-sm text-red-700 font-bold">
               {new Date(event.date).toLocaleString()}
             </p>
-            <p className="text-sm text-gray-700">{event.location}</p>
+            <p className="text-sm font-bold text-gray-800">{event.location}</p>
+            <button
+              onClick={() => deleteEvent(event.id)}
+              className="mt-2 text-sm text-white bg-red-500 px-3 py-1 rounded hover:bg-red-700"
+            >
+              🗑 Delete
+            </button>
           </div>
         ))}
       </div>
