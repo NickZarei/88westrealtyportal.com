@@ -1,12 +1,9 @@
 import "./globals.css";
 import { ReactNode } from "react";
-import Navbar from "@/components/layout/Navbar";
-import ClientToaster from "@/components/layout/ClientToaster";
-import ClientLayout from "./ClientLayout";
 
 export const metadata = {
   title: "88West Realty Portal",
-  description: "Team dashboard and approvals system",
+  description: "Elegant UI for team collaboration",
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
@@ -19,12 +16,10 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <link rel="icon" href="/favicon.ico" />
         <title>{metadata.title}</title>
       </head>
-      <body className="bg-gray-50 text-gray-900">
-        <ClientLayout>
-          <Navbar />
-          <ClientToaster />
+      <body className="min-h-screen bg-gradient-to-br from-white to-gray-100 text-gray-900 font-sans antialiased">
+        <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {children}
-        </ClientLayout>
+        </main>
       </body>
     </html>
   );
