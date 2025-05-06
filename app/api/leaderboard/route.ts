@@ -1,37 +1,26 @@
 import { NextResponse } from "next/server";
-import { connectToDB } from "@/lib/db";
+import connectToDB from "@/lib/dbConnect";
+import Activity from "@/models/Activity";
 
 export async function GET() {
-  const db = await connectToDB();
+  try {
+    await connectToDB();
 
-  const results = await db.collection("activities").aggregate([
-    { $match: { status: "Approved" } },
-    {
-      $group: {
-        _id: "$createdBy",
-        totalPoints: { $sum: "$points" },
+    const leaderboard = await Activity.aggregate([
+      { $match: { status: "Approved" } }, // Only approved activities
+      {
+        $group: {
+          _id: "$createdBy", // Group by user (email or id)
+          totalPoints: { $sum: "$points" }, // Sum points field
+          count: { $sum: 1 },               // Number of activities
+        },
       },
-    },
-    {
-      $lookup: {
-        from: "users",
-        localField: "_id",
-        foreignField: "email",
-        as: "user",
-      },
-    },
-    { $unwind: "$user" },
-    {
-      $project: {
-        email: "$_id",
-        name: { $concat: ["$user.firstName", " ", "$user.lastName"] },
-        role: "$user.role",
-        totalPoints: 1,
-      },
-    },
-    { $sort: { totalPoints: -1 } },
-    { $limit: 50 },
-  ]).toArray();
+      { $sort: { totalPoints: -1 } },       // Sort by highest points
+    ]);
 
-  return NextResponse.json({ success: true, leaderboard: results });
+    return NextResponse.json({ success: true, leaderboard });
+  } catch (error: any) {
+    console.error("Leaderboard API error:", error);
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+  }
 }
