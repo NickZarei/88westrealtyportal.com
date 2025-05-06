@@ -1,11 +1,7 @@
 {
   "compilerOptions": {
     "target": "ES2020",
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "esnext"
-    ],
+    "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
@@ -17,30 +13,30 @@
     "isolatedModules": true,
     "jsx": "preserve",
     "incremental": true,
+
+    // Support absolute imports like @/components/...
     "baseUrl": ".",
     "paths": {
-      "@/*": [
-        "./*"
-      ]
+      "@/*": ["./*"]
     },
-    "typeRoots": [
-      "./types",
-      "./node_modules/@types"
-    ],
-    "types": [
-      "next-auth",
-      "react",
-      "react-dom"
-    ],
+
+    // Use custom types like next-auth extensions
+    "typeRoots": ["./types", "./node_modules/@types"],
+    "types": ["next-auth", "react", "react-dom"],
+
+    // Next.js plugin
     "plugins": [
       {
         "name": "next"
       }
     ]
   },
+
+  // Optional: Disable typed routing (if using dynamic routes freely)
   "next": {
     "typedRoutes": false
   },
+
   "include": [
     "next-env.d.ts",
     "**/*.ts",
@@ -48,7 +44,5 @@
     ".next/types/**/*.ts",
     "types/**/*.d.ts"
   ],
-  "exclude": [
-    "node_modules"
-  ]
+  "exclude": ["node_modules"]
 }

@@ -1,33 +1,86 @@
 "use client";
 
-import { Card, CardContent } from "@/components/ui/card";
+import { useSession } from "next-auth/react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { File, CalendarDays, Trophy, CheckCircle, Settings, User } from "lucide-react";
 
-const features = [
-  { title: "Files", icon: <File className="w-8 h-8" />, link: "/files" },
-  { title: "Events", icon: <CalendarDays className="w-8 h-8" />, link: "/events" },
-  { title: "Leaderboard", icon: <Trophy className="w-8 h-8" />, link: "/leaderboard" },
-  { title: "Approvals", icon: <CheckCircle className="w-8 h-8" />, link: "/approvals" },
-  { title: "Settings", icon: <Settings className="w-8 h-8" />, link: "/settings" },
-  { title: "Profile", icon: <User className="w-8 h-8" />, link: "/profile" },
-];
+const DashboardHome = () => {
+  const { data: session, status } = useSession();
+  const user = session?.user;
+  const role = user?.role?.toLowerCase(); // might be undefined
 
-export default function DashboardHome() {
+  const [currentTime, setCurrentTime] = useState<string>("");
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const now = new Date();
+      setCurrentTime(now.toLocaleTimeString());
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const cards = [
+    {
+      title: "User Info",
+      description: `${user?.name || "Agent"}\n${user?.email || "No email"}\n${currentTime}`,
+      icon: "👤",
+      href: "#",
+    },
+    {
+      title: "Leaderboard",
+      description: "Current rankings and points",
+      icon: "🏆",
+      href: "/leaderboard",
+    },
+    {
+      title: "Calendar",
+      description: "View all upcoming events",
+      icon: "📅",
+      href: "/events",
+    },
+    {
+      title: "Marketing",
+      description: "Access marketing materials",
+      icon: "📣",
+      href: "/marketing",
+    },
+    {
+      title: "Operations",
+      description: "Download operations files",
+      icon: "🛠",
+      href: "/operations",
+    },
+    {
+      title: "Approvals",
+      description: "Manage activity approvals",
+      icon: "✅",
+      href: "/approvals",
+      roleOnly: ["ceo", "hr"],
+    },
+  ];
+
   return (
-    <div className="p-6">
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {features.map((feature) => (
-          <Link href={feature.link} key={feature.title}>
-            <Card className="hover:shadow-xl transition duration-300 cursor-pointer rounded-2xl p-4">
-              <CardContent className="flex flex-col items-center justify-center h-40">
-                <div className="mb-4 text-primary">{feature.icon}</div>
-                <div className="text-xl font-semibold">{feature.title}</div>
-              </CardContent>
-            </Card>
-          </Link>
-        ))}
+    <div className="min-h-screen bg-gray-50 py-10 px-4">
+      <h1 className="text-3xl font-bold text-center mb-10">88West Team Portal</h1>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
+        {cards.map((card) => {
+          if (card.roleOnly && (!role || !card.roleOnly.includes(role))) return null;
+
+          return (
+            <Link href={card.href} key={card.title}>
+              <div className="border rounded-2xl p-6 bg-white shadow-sm hover:shadow-lg transition">
+                <div className="text-4xl mb-3 text-center">{card.icon}</div>
+                <h2 className="text-xl font-semibold text-center">{card.title}</h2>
+                <p className="text-gray-600 text-sm text-center whitespace-pre-line mt-2">
+                  {card.description}
+                </p>
+              </div>
+            </Link>
+          );
+        })}
       </div>
     </div>
   );
-}
+};
+
+export default DashboardHome;

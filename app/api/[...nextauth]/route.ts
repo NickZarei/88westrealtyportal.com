@@ -2,13 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import dbConnect from "@/lib/dbConnect";
 import Event from "@/models/Event";
 
-// Define the correct context type for dynamic routes in Next.js App Router
+// Define the correct context shape
 interface Context {
   params: { id: string };
 }
 
-export async function PUT(req: NextRequest, { params }: Context) {
-  const { id } = params;
+export async function PUT(req: NextRequest, context: Context) {
+  const { id } = context.params;
 
   try {
     await dbConnect();
