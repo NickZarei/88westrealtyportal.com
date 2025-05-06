@@ -1,25 +1,19 @@
-import "./globals.css";
-import { ReactNode } from "react";
+// app/layout.tsx
+
+import './globals.css';
+import { ReactNode } from 'react';
+import SessionWrapper from './components/SessionWrapper'; // ✅ import your wrapper
 
 export const metadata = {
-  title: "88West Realty Portal",
-  description: "Elegant UI for team collaboration",
+  title: '88West Realty Portal',
+  description: 'Team dashboard and approvals system',
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
-      <head>
-        <meta charSet="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <meta name="description" content={metadata.description} />
-        <link rel="icon" href="/favicon.ico" />
-        <title>{metadata.title}</title>
-      </head>
-      <body className="min-h-screen bg-gradient-to-br from-white to-gray-100 text-gray-900 font-sans antialiased">
-        <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          {children}
-        </main>
+      <body>
+        <SessionWrapper>{children}</SessionWrapper> {/* ✅ Wrap here */}
       </body>
     </html>
   );

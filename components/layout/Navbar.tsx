@@ -8,22 +8,21 @@ export default function Navbar() {
   const pathname = usePathname();
   const { data: session } = useSession();
 
-  const linkStyle = (path: string) =>
-    `text-sm font-medium hover:underline ${
+  const linkStyle = (path: string) => {
+    if (!pathname) return "text-sm font-medium text-gray-700 hover:underline";
+
+    return `text-sm font-medium hover:underline ${
       pathname === path || pathname.startsWith(path)
         ? "text-red-700 underline"
         : "text-gray-700"
     }`;
+  };
 
   return (
     <nav className="w-full px-6 py-4 bg-white shadow sticky top-0 z-50 flex justify-between items-center">
       {/* Left: Logo + Name */}
       <div className="flex items-center gap-2">
-        <img
-          src="/88west-logo.png"
-          alt="88West Logo"
-          className="h-8 w-auto"
-        />
+        <img src="/88west-logo.png" alt="88West Logo" className="h-8 w-auto" />
         <span className="text-xl font-bold text-red-700">88West Realty</span>
       </div>
 
@@ -49,17 +48,11 @@ export default function Navbar() {
           </Link>
         )}
         {!session ? (
-          <button
-            onClick={() => signIn("google")}
-            className="text-sm text-blue-600 underline"
-          >
+          <button onClick={() => signIn("google")} className="text-sm text-blue-600 underline">
             Login
           </button>
         ) : (
-          <button
-            onClick={() => signOut()}
-            className="text-sm text-red-600 underline"
-          >
+          <button onClick={() => signOut()} className="text-sm text-red-600 underline">
             Logout
           </button>
         )}

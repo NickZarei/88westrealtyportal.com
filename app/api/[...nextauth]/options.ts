@@ -42,8 +42,12 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.role = user.role as "admin" | "agent" | "marketing" | "ceo" | "hr" | "operations";
-        token.points = user.points ?? 0;
+        const u = user as {
+          role: "admin" | "agent" | "marketing" | "ceo" | "hr" | "operations";
+          points?: number;
+        };
+        token.role = u.role;
+        token.points = u.points ?? 0;
       }
       return token;
     },

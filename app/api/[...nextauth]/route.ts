@@ -1,34 +1,40 @@
-import NextAuth from "next-auth";
-import CredentialsProvider from "next-auth/providers/credentials";
+import { NextRequest, NextResponse } from "next/server";
+import dbConnect from "@/lib/dbConnect";
+import Event from "@/models/Event";
 
-const handler = NextAuth({
-  providers: [
-    CredentialsProvider({
-      name: "Credentials",
-      credentials: {
-        email: { label: "Email", type: "text" },
-        password: { label: "Password", type: "password" },
-      },
-      async authorize(credentials) {
-        const { email, password } = credentials ?? {};
+// Define the correct context type for dynamic routes in Next.js App Router
+interface Context {
+  params: { id: string };
+}
 
-        // Simple hardcoded login check
-        if (email === "admin@admin.com" && password === "admin") {
-          return {
-            id: "1", // ✅ string required
-            name: "Admin",
-            email: "admin@admin.com",
-          };
-        }
+export async function PUT(req: NextRequest, { params }: Context) {
+  const { id } = params;
 
-        return null; // ❌ Reject login
-      },
-    }),
-  ],
-  secret: process.env.NEXTAUTH_SECRET,
-  pages: {
-    signIn: "/login", // optional, customize this route
-  },
-});
+  try {
+    await dbConnect();
+    const body = await req.json();
 
-export { handler as GET, handler as POST };
+    const updatedEvent = await Event.findByIdAndUpdate(id, body, {
+      new: true,
+      runValidators: true,
+    });
+
+    if (!updatedEvent) {
+      return NextResponse.json(
+        { success: false, message: "Event not found" },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json(
+      { success: true, data: updatedEvent },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error("PUT /api/events/[id] error:", error);
+    return NextResponse.json(
+      { success: false, message: "Server error" },
+      { status: 500 }
+    );
+  }
+}

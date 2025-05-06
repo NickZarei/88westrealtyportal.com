@@ -2,12 +2,16 @@ import { NextRequest, NextResponse } from "next/server";
 import dbConnect from "@/lib/dbConnect";
 import Event from "@/models/Event";
 
-export async function PUT(req: NextRequest, context: any) {
-  const { id } = context.params;
+// Define the correct context type for dynamic routes in Next.js App Router
+interface Context {
+  params: { id: string };
+}
+
+export async function PUT(req: NextRequest, { params }: Context) {
+  const { id } = params;
 
   try {
     await dbConnect();
-
     const body = await req.json();
 
     const updatedEvent = await Event.findByIdAndUpdate(id, body, {

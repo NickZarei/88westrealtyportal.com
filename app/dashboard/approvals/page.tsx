@@ -12,15 +12,17 @@ interface Activity {
 }
 
 export default function ApprovalsPage() {
-  const { data: session, status } = useSession();
+  const sessionResult = useSession();
+  const session = sessionResult?.data;
+  const status = sessionResult?.status;
+
   const [activities, setActivities] = useState<Activity[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // ✅ Role protection
-  if (status === "loading") return <p className="p-6">Checking permissions...</p>;
+  if (status === "loading") return <p className="p-6">🔄 Checking permissions...</p>;
 
-  if (!["admin", "hr", "ceo"].includes(session?.user?.role || "")) {
-    return <p className="p-6 text-red-600">🚫 Access denied. Only admin, HR, or CEO can view this page.</p>;
+  if (!session || !["admin", "hr", "ceo"].includes(session.user?.role || "")) {
+    return <p className="p-6 text-red-600">🚫 Access denied. Only Admin, HR, or CEO can view this page.</p>;
   }
 
   useEffect(() => {
@@ -33,7 +35,7 @@ export default function ApprovalsPage() {
           const pending = data.filter((a: Activity) => a.status === "Pending");
           setActivities(pending);
         } else {
-          console.error("Invalid response format:", data);
+          console.error("Invalid response:", data);
         }
       } catch (err) {
         console.error("Failed to fetch activities:", err);
@@ -47,19 +49,15 @@ export default function ApprovalsPage() {
 
   const handleApprove = async (id: string) => {
     try {
-      const res = await fetch(`/api/events/${id}/approve`, {
-        method: "POST",
-      });
-
+      const res = await fetch(`/api/events/${id}/approve`, { method: "POST" });
       if (res.ok) {
         setActivities((prev) => prev.filter((a) => a._id !== id));
-        alert("✅ Activity approved and points assigned!");
+        alert("✅ Activity approved!");
       } else {
-        const err = await res.text();
-        alert("Approval failed: " + err);
+        alert("❌ Approval failed.");
       }
     } catch (err) {
-      console.error("Approval error:", err);
+      console.error(err);
       alert("Something went wrong while approving.");
     }
   };
@@ -71,28 +69,26 @@ export default function ApprovalsPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: "Rejected" }),
       });
-
       const result = await res.json();
-
       if (result.success) {
         setActivities((prev) => prev.filter((a) => a._id !== id));
         alert("❌ Activity rejected.");
       } else {
-        alert("Rejection failed: " + result.error);
+        alert("Rejection failed.");
       }
     } catch (err) {
-      console.error("Rejection error:", err);
+      console.error(err);
       alert("Something went wrong while rejecting.");
     }
   };
 
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4 text-red-700">📝 Pending Activity Approvals</h1>
+      <h1 className="text-2xl font-bold mb-4 text-red-700">📝 Pending Approvals</h1>
       {loading ? (
         <p>Loading activities...</p>
       ) : activities.length === 0 ? (
-        <p className="text-gray-600 italic">No pending activities at the moment.</p>
+        <p className="text-gray-600 italic">No pending activities.</p>
       ) : (
         activities.map((activity) => (
           <div

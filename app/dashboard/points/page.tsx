@@ -11,7 +11,10 @@ type Activity = {
 };
 
 export default function PointsPage() {
-  const { data: session, status } = useSession();
+  const sessionResult = useSession();
+  const session = sessionResult?.data;
+  const status = sessionResult?.status;
+
   const [activities, setActivities] = useState<Activity[]>([]);
 
   useEffect(() => {
@@ -20,8 +23,11 @@ export default function PointsPage() {
       const data = await res.json();
       if (data.success) setActivities(data.activities);
     };
-    fetchData();
-  }, []);
+
+    if (status === "authenticated") {
+      fetchData();
+    }
+  }, [status]);
 
   if (status === "loading") return <p className="p-6 text-center">Loading...</p>;
   if (!session) return <p className="p-6 text-center">Please log in.</p>;
@@ -36,7 +42,9 @@ export default function PointsPage() {
           {activities.map((activity, i) => (
             <li key={i} className="border p-4 rounded shadow bg-white">
               <div className="font-semibold">{activity.type}</div>
-              <div className="text-sm text-gray-500">{new Date(activity.createdAt).toLocaleString()}</div>
+              <div className="text-sm text-gray-500">
+                {new Date(activity.createdAt).toLocaleString()}
+              </div>
               <div className="text-sm">{activity.notes}</div>
               <div className="font-bold text-green-700">+{activity.points} pts</div>
             </li>
