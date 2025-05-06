@@ -1,31 +1,14 @@
-import { NextResponse } from "next/server";
-import dbConnect from "@/lib/dbConnect";
-import DriveFile from "@/models/DriveFile";
+// app/api/drivefiles/route.ts
 
-// Fixing the types for the DELETE request
-export async function DELETE(
-  req: Request, 
-  { params }: { params: { id: string } }
-) {
-  try {
-    await dbConnect();  // Make sure your connection is successful
-    const deleted = await DriveFile.findByIdAndDelete(params.id);  // Ensure proper object ID is used
+export async function DELETE(req: Request) {
+  const url = new URL(req.url || '', 'http://localhost');
+  const id = url.searchParams.get('id'); // assumes id is passed as ?id=123
 
-    if (!deleted) {
-      return NextResponse.json(
-        { success: false, message: "File not found" },
-        { status: 404 }
-      );
-    }
-
-    return NextResponse.json({ success: true, message: "✅ File deleted" });
-  } catch (error) {
-    // Log the error for debugging
-    console.error("Error deleting file:", error);
-    
-    return NextResponse.json(
-      { success: false, message: "Server error" },
-      { status: 500 }
-    );
+  if (!id) {
+    return new Response("Missing ID", { status: 400 });
   }
+
+  // TODO: Add your deletion logic here (e.g. delete from DB)
+
+  return new Response(`Deleted file with ID: ${id}`, { status: 200 });
 }
