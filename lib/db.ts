@@ -2,20 +2,12 @@ import { MongoClient } from "mongodb";
 
 const uri = process.env.MONGODB_URI!;
 const client = new MongoClient(uri);
-
-let cachedDb: any = null;
+let db: any;
 
 export async function connectToDB() {
-  if (cachedDb) return cachedDb;
-
-  try {
-    if (!client.topology?.isConnected()) {
-      await client.connect();
-    }
-    cachedDb = client.db("portal");
-    return cachedDb;
-  } catch (error) {
-    console.error("MongoDB connection error:", error);
-    throw new Error("Failed to connect to MongoDB");
+  if (!db) {
+    await client.connect();
+    db = client.db("portal"); // Replace "portal" with your DB name if different
   }
+  return db;
 }
