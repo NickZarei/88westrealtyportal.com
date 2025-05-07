@@ -9,11 +9,9 @@
     "lint": "next lint"
   },
   "dependencies": {
-    ...
+    "example-dependency": "1.0.0"
   },
-  "devDependencies": {
-    ...
-  },
+  "devDependencies": {},
   "engines": {
     "node": "18.x"
   }
