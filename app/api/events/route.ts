@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import dbConnect from "@/lib/dbConnect";
 import Event from "@/models/Event";
 
-// Define the correct context type for dynamic routes in Next.js App Router
 interface Context {
   params: { id: string };
 }

@@ -61,7 +61,7 @@ export default function SignupPage() {
         <option value="admin">Admin</option>
         <option value="ceo">CEO</option>
         <option value="marketing">Marketing</option>
-        <option value="operations">Operations</option>
+        <option value="conveyance">Conveyance</option>
       </select>
 
       <button type="submit" className="bg-red-600 text-white px-4 py-2">

@@ -22,7 +22,7 @@ export default function Navbar() {
                   ? "bg-red-100 text-red-700"
                   : role === "marketing"
                   ? "bg-yellow-100 text-yellow-700"
-                  : role === "operation"
+                  : role === "conveyance"
                   ? "bg-blue-100 text-blue-700"
                   : role === "agent"
                   ? "bg-green-100 text-green-700"

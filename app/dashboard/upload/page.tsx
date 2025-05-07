@@ -17,7 +17,7 @@ export default function UploadPage() {
 
   useEffect(() => {
     if (status === "authenticated") {
-      const allowedRoles = ["agent", "marketing", "operation"];
+      const allowedRoles = ["agent", "marketing", "conveyance"];
       const userRole = (session?.user?.role || "").toLowerCase();
 
       if (!allowedRoles.includes(userRole)) {

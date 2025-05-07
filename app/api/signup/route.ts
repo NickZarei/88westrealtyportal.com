@@ -40,7 +40,7 @@ export async function POST(req: NextRequest) {
       admin: process.env.ADMIN_APPROVAL_CODE!,
       ceo: process.env.MANAGER_APPROVAL_CODE!,
       marketing: process.env.MARKETING_APPROVAL_CODE!,
-      operation: process.env.OPERATIONS_APPROVAL_CODE!,
+      conveyance: process.env.CONVEYANCE_APPROVAL_CODE!,
       hr: process.env.HR_APPROVAL_CODE!,
     };
 
