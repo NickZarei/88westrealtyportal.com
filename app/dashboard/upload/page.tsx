@@ -8,7 +8,10 @@ import { toast } from "react-hot-toast";
 import { motion } from "framer-motion";
 
 export default function UploadPage() {
-  const { data: session, status } = useSession();
+  const sessionResult = useSession();
+const session = sessionResult?.data;
+const status = sessionResult?.status;
+
   const router = useRouter();
 
   const [type, setType] = useState("");
