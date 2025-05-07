@@ -1,3 +1,4 @@
+"use client";
 import dynamic from "next/dynamic";
 
 // Dynamically load the client-side DashboardHome
