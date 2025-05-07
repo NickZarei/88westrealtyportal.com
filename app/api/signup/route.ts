@@ -4,10 +4,6 @@ import { hashPassword } from "@/lib/hash";
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
-
-    console.log("📨 Signup Body:", body);
-
     const {
       firstName,
       lastName,
@@ -16,11 +12,11 @@ export async function POST(req: NextRequest) {
       phone,
       password,
       role,
-      approvalCode,
-    } = body;
+      approvalCode = "", // ✅ default empty string
+    } = await req.json();
 
-    if (!role) {
-      return NextResponse.json({ error: "Missing role in request." }, { status: 400 });
+    if (!firstName || !lastName || !email || !username || !password || !role) {
+      return NextResponse.json({ error: "Missing required fields." }, { status: 400 });
     }
 
     const db = await connectToDB();
@@ -31,11 +27,8 @@ export async function POST(req: NextRequest) {
     }
 
     const normalizedRole = role.toLowerCase();
-    const trimmedCode = approvalCode?.trim();
 
-    console.log("🔍 Normalized role:", normalizedRole);
-    console.log("🔍 Approval code:", trimmedCode);
-
+    // ✅ Role-based approval codes
     const codeMap: Record<string, string> = {
       admin: process.env.ADMIN_APPROVAL_CODE!,
       ceo: process.env.MANAGER_APPROVAL_CODE!,
@@ -44,10 +37,11 @@ export async function POST(req: NextRequest) {
       hr: process.env.HR_APPROVAL_CODE!,
     };
 
+    // ✅ Approval code check ONLY for non-agents
     if (normalizedRole !== "agent") {
       const expectedCode = codeMap[normalizedRole];
-      if (!expectedCode || trimmedCode !== expectedCode) {
-        return NextResponse.json({ error: "Invalid approval code for this role." }, { status: 403 });
+      if (!expectedCode || approvalCode.trim() !== expectedCode) {
+        return NextResponse.json({ error: "Invalid approval code." }, { status: 403 });
       }
     }
 
@@ -64,11 +58,9 @@ export async function POST(req: NextRequest) {
       createdAt: new Date(),
     });
 
-    console.log("✅ User created:", email);
-    return NextResponse.json({ success: true, message: "User created" });
-
+    return NextResponse.json({ success: true });
   } catch (err: any) {
-    console.error("❌ Signup Error:", err.message);
-    return NextResponse.json({ error: "Server error" }, { status: 500 });
+    console.error("Signup error:", err.message);
+    return NextResponse.json({ error: "Server error." }, { status: 500 });
   }
 }
