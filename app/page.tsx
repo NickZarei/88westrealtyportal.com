@@ -1,10 +1,16 @@
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/[...nextauth]/options"; // ✅ Fixed path
+import { authOptions } from "@/app/api/[...nextauth]/options";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 
 export default async function Home() {
-  const session = await getServerSession(authOptions);
+  let session = null;
+
+  try {
+    session = await getServerSession(authOptions);
+  } catch (error) {
+    console.error("Session error:", error);
+  }
 
   if (session) {
     redirect("/dashboard");
