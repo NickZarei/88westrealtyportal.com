@@ -22,9 +22,11 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Username already exists." }, { status: 409 });
   }
 
-  // ✅ 2. Validate role approval code if role ≠ agent
+  // ✅ 2. Normalize inputs
   const normalizedRole = role.toLowerCase();
+  const trimmedCode = approvalCode?.trim();
 
+  // ✅ 3. Define role-based codes
   const codeMap: Record<string, string> = {
     admin: process.env.ADMIN_APPROVAL_CODE!,
     ceo: process.env.MANAGER_APPROVAL_CODE!,
@@ -33,17 +35,17 @@ export async function POST(req: Request) {
     hr: process.env.HR_APPROVAL_CODE!,
   };
 
+  // ✅ 4. Only validate code for non-agent roles
   if (normalizedRole !== "agent") {
     const expectedCode = codeMap[normalizedRole];
-    if (!expectedCode || approvalCode !== expectedCode) {
+    if (!expectedCode || trimmedCode !== expectedCode) {
       return NextResponse.json({ error: "Invalid approval code for this role." }, { status: 403 });
     }
   }
 
-  // ✅ 3. Hash password
+  // ✅ 5. Hash password and save user
   const hashedPassword = await hashPassword(password);
 
-  // ✅ 4. Save user
   await db.collection("users").insertOne({
     firstName,
     lastName,
