@@ -4,6 +4,10 @@ import { hashPassword } from "@/lib/hash";
 
 export async function POST(req: NextRequest) {
   try {
+    const body = await req.json();
+
+    console.log("📨 Signup Body:", body);
+
     const {
       firstName,
       lastName,
@@ -13,21 +17,25 @@ export async function POST(req: NextRequest) {
       password,
       role,
       approvalCode,
-    } = await req.json();
+    } = body;
+
+    if (!role) {
+      return NextResponse.json({ error: "Missing role in request." }, { status: 400 });
+    }
 
     const db = await connectToDB();
 
-    // ✅ Prevent duplicate usernames
     const existingUser = await db.collection("users").findOne({ username });
     if (existingUser) {
       return NextResponse.json({ error: "Username already exists." }, { status: 409 });
     }
 
-    // ✅ Normalize
     const normalizedRole = role.toLowerCase();
     const trimmedCode = approvalCode?.trim();
 
-    // ✅ Validate codes for special roles
+    console.log("🔍 Normalized role:", normalizedRole);
+    console.log("🔍 Approval code:", trimmedCode);
+
     const codeMap: Record<string, string> = {
       admin: process.env.ADMIN_APPROVAL_CODE!,
       ceo: process.env.MANAGER_APPROVAL_CODE!,
@@ -43,7 +51,6 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // ✅ Hash and insert user
     const hashedPassword = await hashPassword(password);
 
     await db.collection("users").insertOne({
@@ -57,9 +64,11 @@ export async function POST(req: NextRequest) {
       createdAt: new Date(),
     });
 
+    console.log("✅ User created:", email);
     return NextResponse.json({ success: true, message: "User created" });
+
   } catch (err: any) {
-    console.error("Signup Error:", err.message);
+    console.error("❌ Signup Error:", err.message);
     return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }
