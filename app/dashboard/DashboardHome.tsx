@@ -3,6 +3,7 @@
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 interface Event {
   _id: string;
@@ -73,11 +74,59 @@ export default function DashboardHome() {
   const userRole = user?.role?.toLowerCase() || "";
 
   return (
-    <div className="p-6 max-w-3xl mx-auto">
+    <div className="p-6 max-w-6xl mx-auto">
       <h1 className="text-2xl font-bold mb-6">
         Welcome, {user.firstName || user.name || user.email}
       </h1>
 
+      {/* Dashboard grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
+        <Link href="/dashboard/profile">
+          <div className="p-4 border rounded-lg shadow hover:bg-gray-50 transition cursor-pointer">
+            <h2 className="text-lg font-semibold mb-1">👤 User Info</h2>
+            <p className="text-sm text-gray-600">{user.role} — {user.email}</p>
+          </div>
+        </Link>
+
+        <Link href="/dashboard/leaderboard">
+          <div className="p-4 border rounded-lg shadow hover:bg-gray-50 transition cursor-pointer">
+            <h2 className="text-lg font-semibold mb-1">🏆 Leaderboard</h2>
+            <p className="text-sm text-gray-600">Current rankings and points</p>
+          </div>
+        </Link>
+
+        <Link href="/dashboard/calendar">
+          <div className="p-4 border rounded-lg shadow hover:bg-gray-50 transition cursor-pointer">
+            <h2 className="text-lg font-semibold mb-1">📅 Calendar</h2>
+            <p className="text-sm text-gray-600">View all upcoming events</p>
+          </div>
+        </Link>
+
+        <Link href="/dashboard/marketing">
+          <div className="p-4 border rounded-lg shadow hover:bg-gray-50 transition cursor-pointer">
+            <h2 className="text-lg font-semibold mb-1">📣 Marketing</h2>
+            <p className="text-sm text-gray-600">Access marketing materials</p>
+          </div>
+        </Link>
+
+        <Link href="/dashboard/conveyance">
+          <div className="p-4 border rounded-lg shadow hover:bg-gray-50 transition cursor-pointer">
+            <h2 className="text-lg font-semibold mb-1">🧾 Conveyance</h2>
+            <p className="text-sm text-gray-600">Download conveyance files</p>
+          </div>
+        </Link>
+
+        {(userRole === "ceo" || userRole === "hr" || userRole === "admin") && (
+          <Link href="/dashboard/approvals">
+            <div className="p-4 border rounded-lg shadow hover:bg-gray-50 transition cursor-pointer">
+              <h2 className="text-lg font-semibold mb-1">✅ Approvals</h2>
+              <p className="text-sm text-gray-600">Review submitted agent activities</p>
+            </div>
+          </Link>
+        )}
+      </div>
+
+      {/* Events List */}
       <h2 className="text-lg font-semibold mb-4">📅 Your Events</h2>
 
       {events.length === 0 ? (
