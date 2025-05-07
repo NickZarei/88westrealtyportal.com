@@ -1,33 +1,59 @@
-"use client";
-
-import { useState } from "react";
-
-export default function LoginPage() {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-
-  const handleLogin = async () => {
-    const res = await fetch("/api/login", {
-      method: "POST",
-      body: JSON.stringify({ username, password }),
-    });
-
-    if (res.ok) {
-      window.location.href = "/dashboard";
-    } else {
-      setError("Invalid credentials");
-    }
-  };
-
+export default function SignupPage() {
   return (
-    <div className="p-6 max-w-md mx-auto">
-      <h2 className="text-2xl font-bold">Login</h2>
+    <div className="flex items-center justify-center min-h-screen bg-gray-100">
+      <div className="bg-white shadow-lg rounded-xl p-8 w-full max-w-md">
+        <h1 className="text-2xl font-bold mb-6 text-center">Sign Up</h1>
+        
+        <form className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium mb-1">First Name</label>
+              <input type="text" className="w-full border rounded-lg px-4 py-2" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Last Name</label>
+              <input type="text" className="w-full border rounded-lg px-4 py-2" />
+            </div>
+          </div>
 
-      <input placeholder="Username" value={username} onChange={(e) => setUsername(e.target.value)} className="input" />
-      <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} className="input" />
-      <button onClick={handleLogin} className="btn">Login</button>
-      {error && <p className="text-red-500">{error}</p>}
+          <div>
+            <label className="block text-sm font-medium mb-1">Email</label>
+            <input type="email" className="w-full border rounded-lg px-4 py-2" />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-1">Phone</label>
+            <input type="tel" className="w-full border rounded-lg px-4 py-2" />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-1">Username</label>
+            <input type="text" className="w-full border rounded-lg px-4 py-2" />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-1">Password</label>
+            <input type="password" className="w-full border rounded-lg px-4 py-2" />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-1">Role</label>
+            <input type="text" className="w-full border rounded-lg px-4 py-2" placeholder="e.g. Agent" />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-1">Approval Code</label>
+            <input type="text" className="w-full border rounded-lg px-4 py-2" />
+          </div>
+
+          <button
+            type="submit"
+            className="w-full bg-red-600 text-white rounded-lg py-2 hover:bg-red-700 transition"
+          >
+            Create Account
+          </button>
+        </form>
+      </div>
     </div>
   );
 }
