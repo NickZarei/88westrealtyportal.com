@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
       phone,
       password,
       role,
-      approvalCode = "", // ✅ default empty string
+      approvalCode = "",
     } = await req.json();
 
     if (!firstName || !lastName || !email || !username || !password || !role) {
@@ -26,21 +26,27 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Username already exists." }, { status: 409 });
     }
 
-    const normalizedRole = role.toLowerCase();
+    const normalizedRole = (role || "").toLowerCase().trim();
 
-    // ✅ Role-based approval codes
-    const codeMap: Record<string, string> = {
-      admin: process.env.ADMIN_APPROVAL_CODE!,
-      ceo: process.env.MANAGER_APPROVAL_CODE!,
-      marketing: process.env.MARKETING_APPROVAL_CODE!,
-      conveyance: process.env.CONVEYANCE_APPROVAL_CODE!,
-      hr: process.env.HR_APPROVAL_CODE!,
-    };
+    console.log("🔍 Role received:", role);
+    console.log("🔍 Normalized role:", normalizedRole);
+    console.log("🔍 Approval code received:", approvalCode);
 
-    // ✅ Approval code check ONLY for non-agents
+    // ✅ Only check approval code if not agent
     if (normalizedRole !== "agent") {
+      const codeMap: Record<string, string> = {
+        admin: process.env.ADMIN_APPROVAL_CODE!,
+        ceo: process.env.MANAGER_APPROVAL_CODE!,
+        marketing: process.env.MARKETING_APPROVAL_CODE!,
+        conveyance: process.env.CONVEYANCE_APPROVAL_CODE!,
+        hr: process.env.HR_APPROVAL_CODE!,
+      };
+
       const expectedCode = codeMap[normalizedRole];
+      console.log("🔍 Expected code for role:", expectedCode);
+
       if (!expectedCode || approvalCode.trim() !== expectedCode) {
+        console.log("❌ Approval code mismatch.");
         return NextResponse.json({ error: "Invalid approval code." }, { status: 403 });
       }
     }
@@ -58,9 +64,10 @@ export async function POST(req: NextRequest) {
       createdAt: new Date(),
     });
 
+    console.log("✅ New user created:", username);
     return NextResponse.json({ success: true });
   } catch (err: any) {
-    console.error("Signup error:", err.message);
+    console.error("❗ Signup error:", err.message);
     return NextResponse.json({ error: "Server error." }, { status: 500 });
   }
 }
