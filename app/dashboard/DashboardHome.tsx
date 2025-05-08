@@ -20,10 +20,8 @@ export default function DashboardHome() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (status === "unauthenticated") {
-      router.push("/login");
-    }
-  }, [status, router]);
+    if (status === "unauthenticated") router.push("/login");
+  }, [status]);
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -31,34 +29,25 @@ export default function DashboardHome() {
         const res = await fetch("/api/events");
         const data = await res.json();
         setEvents(data.data || []);
-      } catch (error) {
-        console.error("Failed to fetch events:", error);
+      } catch (err) {
+        console.error("Error fetching events", err);
       } finally {
         setLoading(false);
       }
     };
 
-    if (status === "authenticated") {
-      fetchEvents();
-    }
+    if (status === "authenticated") fetchEvents();
   }, [status]);
 
   const handleDelete = async (id: string) => {
-    const confirmed = confirm("Are you sure you want to delete this event?");
-    if (!confirmed) return;
-
+    if (!confirm("Are you sure you want to delete this event?")) return;
     try {
-      const res = await fetch(`/api/events/${id}`, {
-        method: "DELETE",
-      });
-
+      const res = await fetch(`/api/events/${id}`, { method: "DELETE" });
       if (res.ok) {
-        setEvents((prev) => prev.filter((event) => event._id !== id));
-      } else {
-        alert("Failed to delete event.");
+        setEvents((prev) => prev.filter((e) => e._id !== id));
       }
-    } catch (error) {
-      console.error("Error deleting event:", error);
+    } catch (err) {
+      console.error("Delete failed", err);
     }
   };
 
@@ -71,86 +60,41 @@ export default function DashboardHome() {
   }
 
   const user = session.user as any;
-  const userRole = user?.role?.toLowerCase() || "";
+  const role = user?.role?.toLowerCase() || "";
 
   return (
     <div className="p-6 max-w-6xl mx-auto">
-      <h1 className="text-3xl font-extrabold mb-6 text-red-700">
+      <h1 className="text-3xl font-bold text-red-700 mb-6">
         Welcome, {user.firstName || user.name || user.email}
       </h1>
 
-      {/* Dashboard grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
-        <Link href="/dashboard/profile">
-          <div className="p-4 border rounded-xl shadow hover:shadow-md hover:-translate-y-1 hover:bg-red-50 transition duration-300 cursor-pointer">
-            <h2 className="text-lg font-semibold mb-1">👤 User Info</h2>
-            <p className="text-sm text-gray-600">{user.role} — {user.email}</p>
-          </div>
-        </Link>
-
-        <Link href="/dashboard/leaderboard">
-          <div className="p-4 border rounded-xl shadow hover:shadow-md hover:-translate-y-1 hover:bg-red-50 transition duration-300 cursor-pointer">
-            <h2 className="text-lg font-semibold mb-1">🏆 Leaderboard</h2>
-            <p className="text-sm text-gray-600">Current rankings and points</p>
-          </div>
-        </Link>
-
-        <Link href="/dashboard/calendar">
-          <div className="p-4 border rounded-xl shadow hover:shadow-md hover:-translate-y-1 hover:bg-red-50 transition duration-300 cursor-pointer">
-            <h2 className="text-lg font-semibold mb-1">📅 Calendar</h2>
-            <p className="text-sm text-gray-600">View all upcoming events</p>
-          </div>
-        </Link>
-
-        <Link href="/dashboard/marketing">
-          <div className="p-4 border rounded-xl shadow hover:shadow-md hover:-translate-y-1 hover:bg-red-50 transition duration-300 cursor-pointer">
-            <h2 className="text-lg font-semibold mb-1">📣 Marketing</h2>
-            <p className="text-sm text-gray-600">Access marketing materials</p>
-          </div>
-        </Link>
-
-        <Link href="/dashboard/conveyance">
-          <div className="p-4 border rounded-xl shadow hover:shadow-md hover:-translate-y-1 hover:bg-red-50 transition duration-300 cursor-pointer">
-            <h2 className="text-lg font-semibold mb-1">🧾 Conveyance</h2>
-            <p className="text-sm text-gray-600">Download conveyance files</p>
-          </div>
-        </Link>
-
-        {(userRole === "ceo" || userRole === "hr" || userRole === "admin") && (
-          <Link href="/dashboard/approvals">
-            <div className="p-4 border rounded-xl shadow hover:shadow-md hover:-translate-y-1 hover:bg-red-50 transition duration-300 cursor-pointer">
-              <h2 className="text-lg font-semibold mb-1">✅ Approvals</h2>
-              <p className="text-sm text-gray-600">Review submitted agent activities</p>
-            </div>
-          </Link>
+        <DashboardCard title="👤 User Info" href="/dashboard/profile" text={`${role} — ${user.email}`} />
+        <DashboardCard title="🏆 Leaderboard" href="/dashboard/leaderboard" text="Points & rankings" />
+        <DashboardCard title="📅 Calendar" href="/dashboard/calendar" text="All upcoming events" />
+        <DashboardCard title="📣 Marketing" href="/dashboard/marketing" text="Marketing tools & templates" />
+        <DashboardCard title="🧾 Conveyance" href="/dashboard/conveyance" text="Download forms" />
+        {(role === "admin" || role === "hr" || role === "ceo") && (
+          <DashboardCard title="✅ Approvals" href="/dashboard/approvals" text="Review agent activities" />
         )}
       </div>
 
-      {/* Events List */}
-      <h2 className="text-lg font-semibold mb-4">📅 Your Events</h2>
-
+      <h2 className="text-xl font-semibold mb-4">📅 Your Events</h2>
       {events.length === 0 ? (
         <p>No events found.</p>
       ) : (
-        <ul className="space-y-4 bg-white rounded-xl p-4 shadow-sm border">
+        <ul className="space-y-4">
           {events.map((event) => (
-            <li
-              key={event._id}
-              className="border p-4 rounded shadow-sm flex flex-col md:flex-row md:justify-between md:items-center"
-            >
+            <li key={event._id} className="border p-4 rounded shadow flex justify-between items-start">
               <div>
                 <h3 className="font-semibold">{event.title}</h3>
-                <p className="text-sm text-gray-500">
-                  {new Date(event.date).toLocaleString()}
-                </p>
-                {event.description && (
-                  <p className="mt-1 text-gray-700">{event.description}</p>
-                )}
+                <p className="text-sm text-gray-500">{new Date(event.date).toLocaleString()}</p>
+                {event.description && <p className="mt-1">{event.description}</p>}
               </div>
-              {(userRole === "admin" || user.email === event.createdBy) && (
+              {(role === "admin" || user.email === event.createdBy) && (
                 <button
                   onClick={() => handleDelete(event._id)}
-                  className="mt-2 md:mt-0 bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition"
+                  className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
                 >
                   Delete
                 </button>
@@ -160,5 +104,16 @@ export default function DashboardHome() {
         </ul>
       )}
     </div>
+  );
+}
+
+function DashboardCard({ title, href, text }: { title: string; href: string; text: string }) {
+  return (
+    <Link href={href}>
+      <div className="p-4 border rounded-xl shadow hover:shadow-md hover:-translate-y-1 hover:bg-red-50 transition duration-300 cursor-pointer">
+        <h2 className="text-lg font-semibold mb-1">{title}</h2>
+        <p className="text-sm text-gray-600">{text}</p>
+      </div>
+    </Link>
   );
 }
