@@ -74,6 +74,7 @@ export default function DashboardHome() {
         <DashboardCard title="📅 Calendar" href="/dashboard/calendar" text="All upcoming events" />
         <DashboardCard title="📣 Marketing" href="/dashboard/marketing" text="Marketing tools & templates" />
         <DashboardCard title="🧾 Conveyance" href="/dashboard/conveyance" text="Download forms" />
+        <DashboardCard title="➕ Submit Activity" href="/dashboard/activity-upload" text="Add a new activity for points" />
         {(role === "admin" || role === "hr" || role === "ceo") && (
           <DashboardCard title="✅ Approvals" href="/dashboard/approvals" text="Review agent activities" />
         )}
