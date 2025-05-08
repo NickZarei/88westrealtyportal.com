@@ -28,7 +28,7 @@ const handler = NextAuth({
           id: user._id.toString(),
           name: `${user.firstName} ${user.lastName}`,
           email: user.email,
-          role: user.role as "admin" | "agent" | "marketing" | "ceo" | "hr" | "conveyance",
+          role: user.role as "agent" | "admin" | "ceo" | "marketing" | "conveyance" | "hr",
         };
       },
     }),
@@ -47,7 +47,9 @@ const handler = NextAuth({
       return token;
     },
     async session({ session, token }) {
-      if (token?.role) session.user.role = token.role;
+      if (token?.role) {
+        session.user.role = token.role as string;
+      }
       return session;
     },
   },
