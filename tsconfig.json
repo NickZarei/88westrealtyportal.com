@@ -14,17 +14,14 @@
     "jsx": "preserve",
     "incremental": true,
 
-    // Support absolute imports like @/components/...
     "baseUrl": ".",
     "paths": {
       "@/*": ["./*"]
     },
 
-    // Use custom types like next-auth extensions
     "typeRoots": ["./types", "./node_modules/@types"],
     "types": ["next-auth", "react", "react-dom"],
 
-    // Next.js plugin
     "plugins": [
       {
         "name": "next"
@@ -32,7 +29,6 @@
     ]
   },
 
-  // Optional: Disable typed routing (if using dynamic routes freely)
   "next": {
     "typedRoutes": false
   },

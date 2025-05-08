@@ -24,12 +24,11 @@ const handler = NextAuth({
         const isValid = await verifyPassword(credentials.password, user.password);
         if (!isValid) throw new Error("Invalid password");
 
-        // ✅ Fix: Assert role as one of the expected strings
         return {
           id: user._id.toString(),
           name: `${user.firstName} ${user.lastName}`,
           email: user.email,
-          role: user.role as "agent" | "admin" | "ceo" | "marketing" | "hr" | "conveyance",
+          role: user.role as "admin" | "agent" | "marketing" | "ceo" | "hr" | "conveyance",
         };
       },
     }),
