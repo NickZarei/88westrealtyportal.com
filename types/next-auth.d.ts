@@ -18,7 +18,7 @@ declare module "next-auth" {
   }
 
   interface JWT {
-    sub: string;
+    id: string;
     role?: "admin" | "agent" | "marketing" | "ceo" | "hr" | "conveyance";
   }
 }

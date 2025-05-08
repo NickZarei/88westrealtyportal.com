@@ -1,8 +1,26 @@
-import { NextAuthOptions } from "next-auth";
+import { NextAuthOptions, Session } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import dbConnect from "@/lib/dbConnect";
 import User from "@/models/User";
-import { verifyPassword } from "@/lib/hash"; // optional, if password check is needed
+import { verifyPassword } from "@/lib/hash"; // optional
+
+// 👇 Extend NextAuth session types
+declare module "next-auth" {
+  interface Session {
+    user: {
+      id: string;
+      name: string;
+      email: string;
+      role?: "agent" | "admin" | "ceo" | "marketing" | "conveyance" | "hr";
+    };
+  }
+}
+
+declare module "next-auth/jwt" {
+  interface JWT {
+    role?: string;
+  }
+}
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -15,10 +33,11 @@ export const authOptions: NextAuthOptions = {
       async authorize(credentials) {
         await dbConnect();
 
-        const user = await User.findOne({ username: credentials?.username });
+        // ✅ .exec() fixes the TypeScript error
+        const user = await User.findOne({ username: credentials?.username }).lean().exec();
         if (!user) return null;
 
-        // ✅ Optional: If password hash check is required
+        // ✅ Optional: password check
         // const isValid = await verifyPassword(credentials!.password, user.password);
         // if (!isValid) return null;
 
@@ -40,8 +59,8 @@ export const authOptions: NextAuthOptions = {
     },
     async session({ session, token }) {
       if (token) {
-        session.user.id = token.sub!; // ✅ use non-null assertion
-        session.user.role = (token as any).role;
+        session.user.id = token.sub!;
+        session.user.role = token.role as Session["user"]["role"];
       }
       return session;
     },

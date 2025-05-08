@@ -63,11 +63,11 @@ export default function DashboardHome() {
   };
 
   if (status === "loading" || loading) {
-    return <p className="p-6 text-center">Loading...</p>;
+    return <p className="p-6 text-center text-gray-500">Loading...</p>;
   }
 
   if (!session) {
-    return <p className="p-6 text-center">Not authorized.</p>;
+    return <p className="p-6 text-center text-red-600">Not authorized.</p>;
   }
 
   const user = session.user as any;
@@ -75,42 +75,42 @@ export default function DashboardHome() {
 
   return (
     <div className="p-6 max-w-6xl mx-auto">
-      <h1 className="text-2xl font-bold mb-6">
+      <h1 className="text-3xl font-extrabold mb-6 text-red-700">
         Welcome, {user.firstName || user.name || user.email}
       </h1>
 
       {/* Dashboard grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
         <Link href="/dashboard/profile">
-          <div className="p-4 border rounded-lg shadow hover:bg-gray-50 transition cursor-pointer">
+          <div className="p-4 border rounded-xl shadow hover:shadow-md hover:-translate-y-1 hover:bg-red-50 transition duration-300 cursor-pointer">
             <h2 className="text-lg font-semibold mb-1">👤 User Info</h2>
             <p className="text-sm text-gray-600">{user.role} — {user.email}</p>
           </div>
         </Link>
 
         <Link href="/dashboard/leaderboard">
-          <div className="p-4 border rounded-lg shadow hover:bg-gray-50 transition cursor-pointer">
+          <div className="p-4 border rounded-xl shadow hover:shadow-md hover:-translate-y-1 hover:bg-red-50 transition duration-300 cursor-pointer">
             <h2 className="text-lg font-semibold mb-1">🏆 Leaderboard</h2>
             <p className="text-sm text-gray-600">Current rankings and points</p>
           </div>
         </Link>
 
         <Link href="/dashboard/calendar">
-          <div className="p-4 border rounded-lg shadow hover:bg-gray-50 transition cursor-pointer">
+          <div className="p-4 border rounded-xl shadow hover:shadow-md hover:-translate-y-1 hover:bg-red-50 transition duration-300 cursor-pointer">
             <h2 className="text-lg font-semibold mb-1">📅 Calendar</h2>
             <p className="text-sm text-gray-600">View all upcoming events</p>
           </div>
         </Link>
 
         <Link href="/dashboard/marketing">
-          <div className="p-4 border rounded-lg shadow hover:bg-gray-50 transition cursor-pointer">
+          <div className="p-4 border rounded-xl shadow hover:shadow-md hover:-translate-y-1 hover:bg-red-50 transition duration-300 cursor-pointer">
             <h2 className="text-lg font-semibold mb-1">📣 Marketing</h2>
             <p className="text-sm text-gray-600">Access marketing materials</p>
           </div>
         </Link>
 
         <Link href="/dashboard/conveyance">
-          <div className="p-4 border rounded-lg shadow hover:bg-gray-50 transition cursor-pointer">
+          <div className="p-4 border rounded-xl shadow hover:shadow-md hover:-translate-y-1 hover:bg-red-50 transition duration-300 cursor-pointer">
             <h2 className="text-lg font-semibold mb-1">🧾 Conveyance</h2>
             <p className="text-sm text-gray-600">Download conveyance files</p>
           </div>
@@ -118,7 +118,7 @@ export default function DashboardHome() {
 
         {(userRole === "ceo" || userRole === "hr" || userRole === "admin") && (
           <Link href="/dashboard/approvals">
-            <div className="p-4 border rounded-lg shadow hover:bg-gray-50 transition cursor-pointer">
+            <div className="p-4 border rounded-xl shadow hover:shadow-md hover:-translate-y-1 hover:bg-red-50 transition duration-300 cursor-pointer">
               <h2 className="text-lg font-semibold mb-1">✅ Approvals</h2>
               <p className="text-sm text-gray-600">Review submitted agent activities</p>
             </div>
@@ -132,7 +132,7 @@ export default function DashboardHome() {
       {events.length === 0 ? (
         <p>No events found.</p>
       ) : (
-        <ul className="space-y-4">
+        <ul className="space-y-4 bg-white rounded-xl p-4 shadow-sm border">
           {events.map((event) => (
             <li
               key={event._id}
