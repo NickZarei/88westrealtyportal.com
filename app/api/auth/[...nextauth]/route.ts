@@ -1,80 +1,57 @@
-import { NextRequest, NextResponse } from "next/server";
-import dbConnect from "@/lib/dbConnect";
-import Event from "@/models/Event";
+import NextAuth from "next-auth";
+import CredentialsProvider from "next-auth/providers/credentials";
+import { connectToDB } from "@/lib/db";
+import { verifyPassword } from "@/lib/hash";
 
-// Context typing provided by Next.js route handlers
-interface Context {
-  params: { id: string };
-}
+const handler = NextAuth({
+  providers: [
+    CredentialsProvider({
+      name: "Credentials",
+      credentials: {
+        username: { label: "Username", type: "text" },
+        password: { label: "Password", type: "password" },
+      },
+      async authorize(credentials) {
+        if (!credentials?.username || !credentials.password) {
+          throw new Error("Missing credentials");
+        }
 
-export async function PUT(req: NextRequest, { params }: Context) {
-  const { id } = params;
+        const db = await connectToDB();
+        const user = await db.collection("users").findOne({ username: credentials.username });
 
-  try {
-    await dbConnect();
+        if (!user) throw new Error("User not found");
 
-    const body = await req.json();
+        const isValid = await verifyPassword(credentials.password, user.password);
+        if (!isValid) throw new Error("Invalid password");
 
-    const updatedEvent = await Event.findByIdAndUpdate(id, body, {
-      new: true,
-      runValidators: true,
-    });
+        // ✅ Fix: Assert role as one of the expected strings
+        return {
+          id: user._id.toString(),
+          name: `${user.firstName} ${user.lastName}`,
+          email: user.email,
+          role: user.role as "agent" | "admin" | "ceo" | "marketing" | "hr" | "conveyance",
+        };
+      },
+    }),
+  ],
+  pages: {
+    signIn: "/login",
+  },
+  session: {
+    strategy: "jwt",
+  },
+  callbacks: {
+    async jwt({ token, user }) {
+      if (user) {
+        token.role = user.role;
+      }
+      return token;
+    },
+    async session({ session, token }) {
+      if (token?.role) session.user.role = token.role;
+      return session;
+    },
+  },
+});
 
-    if (!updatedEvent) {
-      return NextResponse.json(
-        { success: false, message: "Event not found" },
-        { status: 404 }
-      );
-    }
-
-    return NextResponse.json(
-      { success: true, data: updatedEvent },
-      { status: 200 }
-    );
-  } catch (err) {
-    console.error("PUT /api/events/[id] error:", err);
-    return NextResponse.json(
-      { success: false, message: "Server error", error: (err as Error).message },
-      { status: 500 }
-    );
-  }
-}
-export async function GET(req: NextRequest, { params }: Context) {
-  const { id } = params;
-
-  try {
-    await dbConnect();
-    const event = await Event.findById(id);
-
-    if (!event) {
-      return NextResponse.json({ success: false, message: "Event not found" }, { status: 404 });
-    }
-
-    return NextResponse.json({ success: true, data: event }, { status: 200 });
-  } catch (err) {
-    return NextResponse.json(
-      { success: false, message: "Server error", error: (err as Error).message },
-      { status: 500 }
-    );
-  }
-}
-
-export async function DELETE(req: NextRequest, { params }: Context) {
-  const { id } = params;
-
-  try {
-    await dbConnect();
-    const deleted = await Event.findByIdAndDelete(id);
-
-    if (!deleted) {
-      return NextResponse.json({ success: false, message: "Event not found" }, { status: 404 });
-    }
-
-    return NextResponse.json({ success: true, message: "Event deleted" }, { status: 200 });
-  } catch (err) {
-    return NextResponse.json(
-      { success: false, message: "Server error", error: (err as Error).message },
-      { status: 500 }
-    );
-  }
-}
+export { handler as GET, handler as POST };
