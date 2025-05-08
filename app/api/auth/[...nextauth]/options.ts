@@ -2,9 +2,8 @@ import { NextAuthOptions, Session } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import dbConnect from "@/lib/dbConnect";
 import User from "@/models/User";
-import { verifyPassword } from "@/lib/hash"; // optional
 
-// 👇 Extend NextAuth session types
+// Extend the session types
 declare module "next-auth" {
   interface Session {
     user: {
@@ -33,19 +32,15 @@ export const authOptions: NextAuthOptions = {
       async authorize(credentials) {
         await dbConnect();
 
-        // ✅ .exec() fixes the TypeScript error
-        const user = await User.findOne({ username: credentials?.username }).lean().exec();
-        if (!user) return null;
+        const user = await User.findOne({ username: credentials?.username }).lean();
 
-        // ✅ Optional: password check
-        // const isValid = await verifyPassword(credentials!.password, user.password);
-        // if (!isValid) return null;
+        if (!user || typeof user !== "object" || !("_id" in user)) return null;
 
         return {
-          id: user._id.toString(),
-          name: `${user.firstName} ${user.lastName}`,
-          email: user.email,
-          role: user.role,
+          id: (user._id as string).toString(),
+          name: `${(user as any).firstName || ""} ${(user as any).lastName || ""}`.trim(),
+          email: (user as any).email,
+          role: (user as any).role,
         };
       },
     }),
