@@ -3,7 +3,6 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import dbConnect from "@/lib/dbConnect";
 import User from "@/models/User";
 
-// Extend the session types
 declare module "next-auth" {
   interface Session {
     user: {
@@ -32,15 +31,23 @@ export const authOptions: NextAuthOptions = {
       async authorize(credentials) {
         await dbConnect();
 
-        const user = await User.findOne({ username: credentials?.username }).lean();
+        const user = await User.findOne({ username: credentials?.username })
+          .lean()
+          .exec() as unknown as {
+            _id: string;
+            firstName: string;
+            lastName: string;
+            email: string;
+            role: "agent" | "admin" | "ceo" | "marketing" | "conveyance" | "hr";
+          };
 
-        if (!user || typeof user !== "object" || !("_id" in user)) return null;
+        if (!user || !user._id || !user.email || !user.role) return null;
 
         return {
-          id: (user._id as string).toString(),
-          name: `${(user as any).firstName || ""} ${(user as any).lastName || ""}`.trim(),
-          email: (user as any).email,
-          role: (user as any).role,
+          id: user._id.toString(),
+          name: `${user.firstName} ${user.lastName}`.trim(),
+          email: user.email,
+          role: user.role,
         };
       },
     }),
