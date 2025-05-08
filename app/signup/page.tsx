@@ -1,5 +1,5 @@
 "use client";
-
+import React from "react"; // ✅ Required for JSX in TSX files
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
@@ -60,7 +60,6 @@ export default function SignupPage() {
           <option value="hr">HR</option>
         </select>
 
-        {/* ✅ Only show approvalCode input if role is NOT agent */}
         {formData.role !== "agent" && (
           <input
             type="text"

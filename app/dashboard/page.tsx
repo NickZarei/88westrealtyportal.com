@@ -1,4 +1,5 @@
 "use client";
+import React from "react"; // ✅ Required for JSX
 import dynamic from "next/dynamic";
 
 // Dynamically load the client-side DashboardHome

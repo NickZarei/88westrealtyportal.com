@@ -1,5 +1,5 @@
 "use client";
-
+import React from "react"; // ✅ Required for JSX
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 
